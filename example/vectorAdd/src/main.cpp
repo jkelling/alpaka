@@ -20,6 +20,7 @@
 #include <random>
 #include <iostream>
 #include <typeinfo>
+#include <chrono>
 
 //#############################################################################
 //! A vector addition kernel.
@@ -116,7 +117,7 @@ auto main()
     QueueAcc queue(devAcc);
 
     // Define the work division
-    Idx const numElements(123456);
+    Idx const numElements(12345678);
     Idx const elementsPerThread(3u);
     alpaka::vec::Vec<Dim, Idx> const extent(numElements);
 
@@ -184,10 +185,20 @@ auto main()
         numElements));
 
     // Enqueue the kernel execution task
-    alpaka::queue::enqueue(queue, taskKernel);
+    {
+        const auto beginT = std::chrono::high_resolution_clock::now();
+        alpaka::queue::enqueue(queue, taskKernel);
+        const auto endT = std::chrono::high_resolution_clock::now();
+        std::cout << "Time for kernel execution: " << std::chrono::duration<double>(endT-beginT).count() << 's' << std::endl;
+    }
 
     // Copy back the result
-    alpaka::mem::view::copy(queue, bufHostC, bufAccC, extent);
+    {
+        auto beginT = std::chrono::high_resolution_clock::now();
+        alpaka::mem::view::copy(queue, bufHostC, bufAccC, extent);
+        const auto endT = std::chrono::high_resolution_clock::now();
+        std::cout << "Time for kernel execution: " << std::chrono::duration<double>(endT-beginT).count() << 's' << std::endl;
+    }
 
     bool resultCorrect(true);
     for(Idx i(0u);
