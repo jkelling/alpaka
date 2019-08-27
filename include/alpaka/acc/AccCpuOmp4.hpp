@@ -41,9 +41,7 @@
 #include <alpaka/core/ClipCast.hpp>
 #include <alpaka/core/Concepts.hpp>
 #include <alpaka/core/Unused.hpp>
-#include <alpaka/dev/DevCpu.hpp>
-
-#include <omp.h>
+#include <alpaka/dev/DevOmp4.hpp>
 
 #include <limits>
 #include <typeinfo>
@@ -164,7 +162,7 @@ namespace alpaka
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto getAccDevProps(
-                    dev::DevCpu const & dev)
+                    dev::DevOmp4 const & dev)
                 -> acc::AccDevProps<TDim, TIdx>
                 {
                     alpaka::ignore_unused(dev);
@@ -220,7 +218,7 @@ namespace alpaka
             struct DevType<
                 acc::AccCpuOmp4<TDim, TIdx>>
             {
-                using type = dev::DevCpu;
+                using type = dev::DevOmp4;
             };
         }
     }
@@ -289,7 +287,7 @@ namespace alpaka
             struct PltfType<
                 acc::AccCpuOmp4<TDim, TIdx>>
             {
-                using type = pltf::PltfCpu;
+                using type = pltf::PltfOmp4;
             };
         }
     }
