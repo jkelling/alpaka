@@ -142,6 +142,7 @@
 #include <alpaka/mem/buf/BufCpu.hpp>
 #include <alpaka/mem/buf/BufCudaRt.hpp>
 #include <alpaka/mem/buf/BufHipRt.hpp>
+#include <alpaka/mem/buf/BufOmp4.hpp>
 #include <alpaka/mem/buf/Traits.hpp>
 
 #include <alpaka/mem/view/ViewCompileTimeArray.hpp>
@@ -175,6 +176,7 @@
 #include <alpaka/pltf/PltfCpu.hpp>
 #include <alpaka/pltf/PltfCudaRt.hpp>
 #include <alpaka/pltf/PltfHipRt.hpp>
+#include <alpaka/pltf/PltfOmp4.hpp>
 #include <alpaka/pltf/Traits.hpp>
 //-----------------------------------------------------------------------------
 // rand
@@ -191,6 +193,7 @@
 #include <alpaka/queue/QueueCudaRtBlocking.hpp>
 #include <alpaka/queue/QueueCpuNonBlocking.hpp>
 #include <alpaka/queue/QueueCpuBlocking.hpp>
+#include <alpaka/queue/QueueOmp4Blocking.hpp>
 #include <alpaka/queue/Traits.hpp>
 //-----------------------------------------------------------------------------
 // time
