@@ -107,7 +107,7 @@ auto main()
     using Acc = DefaultAcc<Dim, Idx>;
     using DevAcc = alpaka::dev::Dev<Acc>;
     using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
-    using QueueAcc = alpaka::queue::QueueCpuBlocking;
+    using QueueAcc = alpaka::queue::QueueOmp4Blocking;
     std::cout << "Using alpaka accelerator: " << alpaka::acc::getAccName<Acc>() << std::endl;
 
     // Select a device
@@ -118,7 +118,7 @@ auto main()
 
     // Define the work division
     Idx const numElements(12345678);
-    Idx const elementsPerThread(3u);
+    Idx const elementsPerThread(8u);
     alpaka::vec::Vec<Dim, Idx> const extent(numElements);
 
     // Let alpaka calculate good block and grid sizes given our full problem extent
