@@ -136,7 +136,7 @@ auto main()
 
     // Define the work division
     Idx const numElements(12345678);
-    Idx const elementsPerThread(3u);
+    Idx const elementsPerThread(8u);
     alpaka::vec::Vec<Dim, Idx> const extent(numElements);
 
     // Let alpaka calculate good block and grid sizes given our full problem extent
