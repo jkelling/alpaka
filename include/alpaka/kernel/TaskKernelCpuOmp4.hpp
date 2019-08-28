@@ -40,6 +40,29 @@
     #include <iostream>
 #endif
 
+#include <typeinfo>
+template<class T>
+static void printArg(const T& t)
+{
+    std::cerr << "Arg: type=" << typeid(t).name() << '\n';
+}
+
+template<
+    typename T>
+static void printArg(T* t)
+{
+    std::cerr << "Ptr Arg: ptr=" << t << '\n';
+}
+
+static void printArgs() {}
+
+template<class T, class... Args>
+static void printArgs(const T& t, Args... args)
+{
+    printArg(t);
+    printArgs(std::forward<Args>(args)...);
+}
+
 namespace alpaka
 {
     namespace kernel
@@ -141,6 +164,8 @@ namespace alpaka
                 // Force the environment to use the given number of threads.
                 int const ompIsDynamic(::omp_get_dynamic());
                 ::omp_set_dynamic(0);
+
+                meta::apply([&](TArgs ... args){printArgs(std::forward<TArgs>(args)...);}, m_args);
 
                 // `When an if(scalar-expression) evaluates to false, the structured block is executed on the host.`
                 auto argsD = m_args;
