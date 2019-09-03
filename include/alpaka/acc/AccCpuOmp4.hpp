@@ -17,14 +17,14 @@
 
 // Base classes.
 #include <alpaka/workdiv/WorkDivMembers.hpp>
-#include <alpaka/idx/gb/IdxGbRef.hpp>
-#include <alpaka/idx/bt/IdxBtOmp.hpp>
+#include <alpaka/idx/gb/IdxGbOmp4BuiltIn.hpp>
+#include <alpaka/idx/bt/IdxBtOmp4BuiltIn.hpp>
 #include <alpaka/atomic/AtomicStdLibLock.hpp>
 #include <alpaka/atomic/AtomicOmpBuiltIn.hpp>
 #include <alpaka/atomic/AtomicHierarchy.hpp>
 #include <alpaka/math/MathStdLib.hpp>
-#include <alpaka/block/shared/dyn/BlockSharedMemDynBoostAlignedAlloc.hpp>
-#include <alpaka/block/shared/st/BlockSharedMemStMasterSync.hpp>
+#include <alpaka/block/shared/dyn/BlockSharedMemDynOmp4.hpp>
+#include <alpaka/block/shared/st/BlockSharedMemStOmp4.hpp>
 #include <alpaka/block/sync/BlockSyncBarrierOmp.hpp>
 #include <alpaka/rand/RandStdLib.hpp>
 #include <alpaka/time/TimeOmp.hpp>
@@ -68,16 +68,16 @@ namespace alpaka
             typename TIdx>
         class AccCpuOmp4 final :
             public workdiv::WorkDivMembers<TDim, TIdx>,
-            public idx::gb::IdxGbRef<TDim, TIdx>,
-            public idx::bt::IdxBtOmp<TDim, TIdx>,
+            public idx::gb::IdxGbOmp4BuiltIn<TDim, TIdx>,
+            public idx::bt::IdxBtOmp4BuiltIn<TDim, TIdx>,
             public atomic::AtomicHierarchy<
                 atomic::AtomicStdLibLock<16>,   // grid atomics
                 atomic::AtomicOmpBuiltIn,    // block atomics
                 atomic::AtomicOmpBuiltIn     // thread atomics
             >,
             public math::MathStdLib,
-            public block::shared::dyn::BlockSharedMemDynBoostAlignedAlloc,
-            public block::shared::st::BlockSharedMemStMasterSync,
+            public block::shared::dyn::BlockSharedMemDynOmp4,
+            public block::shared::st::BlockSharedMemStOmp4,
             public block::sync::BlockSyncBarrierOmp,
             public rand::RandStdLib,
             public time::TimeOmp,
@@ -100,18 +100,17 @@ namespace alpaka
                 TWorkDiv const & workDiv,
                 TIdx const & blockSharedMemDynSizeBytes) :
                     workdiv::WorkDivMembers<TDim, TIdx>(workDiv),
-                    idx::gb::IdxGbRef<TDim, TIdx>(m_gridBlockIdx),
-                    idx::bt::IdxBtOmp<TDim, TIdx>(),
+                    idx::gb::IdxGbOmp4BuiltIn<TDim, TIdx>(),
+                    idx::bt::IdxBtOmp4BuiltIn<TDim, TIdx>(),
                     atomic::AtomicHierarchy<
                         atomic::AtomicStdLibLock<16>,// atomics between grids
                         atomic::AtomicOmpBuiltIn, // atomics between blocks
                         atomic::AtomicOmpBuiltIn  // atomics between threads
                     >(),
                     math::MathStdLib(),
-                    block::shared::dyn::BlockSharedMemDynBoostAlignedAlloc(static_cast<std::size_t>(blockSharedMemDynSizeBytes)),
-                    block::shared::st::BlockSharedMemStMasterSync(
-                        [this](){block::sync::syncBlockThreads(*this);},
-                        [](){return (::omp_get_thread_num() == 0);}),
+                    block::shared::dyn::BlockSharedMemDynOmp4(static_cast<std::size_t>(blockSharedMemDynSizeBytes)),
+                    //! \TODO can with some TMP determine the amount of statically alloced smem from the kernelFuncObj?
+                    block::shared::st::BlockSharedMemStOmp4(),
                     block::sync::BlockSyncBarrierOmp(),
                     rand::RandStdLib(),
                     time::TimeOmp(),
