@@ -55,7 +55,9 @@ public:
             "The VectorAddKernel expects 1-dimensional indices!");
 
         TIdx const gridThreadIdx(alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u]);
-        // printf("gridThreadIdx=%d\n", (int)gridThreadIdx);
+        // if(gridThreadIdx > 20)
+        //     return;
+        // printf("gridThreadIdx=%d\n", int(gridThreadIdx));
         TIdx const threadElemExtent(alpaka::workdiv::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)[0u]);
         TIdx const threadFirstElemIdx(gridThreadIdx * threadElemExtent);
 
@@ -65,11 +67,16 @@ public:
             // The result is uniform for all but the last thread.
             TIdx const threadLastElemIdx(threadFirstElemIdx+threadElemExtent);
             TIdx const threadLastElemIdxClipped((numElements > threadLastElemIdx) ? threadLastElemIdx : numElements);
-            // printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d\n",
-            //         (int)threadFirstElemIdx, (int)threadElemExtent, (int)numElements, (int)threadLastElemIdx);
+            const TIdx j(threadFirstElemIdx);
+            printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d threadLastElemIdxClipped=%d j=%d A=%d B=%d\n",
+                    int(threadFirstElemIdx), int(threadElemExtent), int(numElements), int(threadLastElemIdx), int(threadLastElemIdxClipped),
+                    int(j), int(0) , int(0));
 
             for(TIdx i(threadFirstElemIdx); i<threadLastElemIdxClipped; ++i)
             {
+                // printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d j=%d A=%d B=%d\n",
+                //     int(threadFirstElemIdx), int(threadElemExtent), int(numElements), int(threadLastElemIdx),
+                //     int(i), int(0) , int(0));
                 C[i] = A[i] + B[i];
             }
         }
@@ -132,6 +139,10 @@ auto main()
             elementsPerThread,
             false,
             alpaka::workdiv::GridBlockExtentSubDivRestrictions::Unrestricted));
+
+    std::cout << "m_gridBlockExtent " << workDiv.m_gridBlockExtent << std::endl;
+    std::cout << "m_blockThreadExtent " << workDiv.m_blockThreadExtent << std::endl;
+    std::cout << "m_threadElemExtent " << workDiv.m_threadElemExtent << std::endl;
 
     // Define the buffer element type
     using Data = std::uint32_t;
@@ -199,6 +210,7 @@ auto main()
     {
         auto beginT = std::chrono::high_resolution_clock::now();
         alpaka::mem::view::copy(queue, bufHostC, bufAccC, extent);
+        // alpaka::mem::view::copy(queue, bufHostA, bufAccB, extent);
         const auto endT = std::chrono::high_resolution_clock::now();
         std::cout << "Time for copy down: " << std::chrono::duration<double>(endT-beginT).count() << 's' << std::endl;
         std::cout << "got [0,100,1000]:\t" << pBufHostC[0] << '\t' << pBufHostC[100] << '\t' << pBufHostC[1000] << std::endl;
