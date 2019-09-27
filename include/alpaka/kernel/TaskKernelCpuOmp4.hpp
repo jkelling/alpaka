@@ -92,6 +92,9 @@ namespace alpaka
                 static_assert(
                     dim::Dim<typename std::decay<TWorkDiv>::type>::value == TDim::value,
                     "The work division and the execution task have to be of the same dimensionality!");
+                std::cout << "m_gridBlockExtent " << workDiv.m_gridBlockExtent << std::endl;
+                std::cout << "m_blockThreadExtent " << workDiv.m_blockThreadExtent << std::endl;
+                std::cout << "m_threadElemExtent " << workDiv.m_threadElemExtent << std::endl;
             }
             //-----------------------------------------------------------------------------
             TaskKernelCpuOmp4(TaskKernelCpuOmp4 const & other) = default;

@@ -115,6 +115,7 @@ namespace alpaka
                     WorkDivOmp4BuiltIn<TDim, TIdx> const & workDiv)
                 -> vec::Vec<TDim, TIdx>
                 {
+                    printf("getWorkDiv Blocks %d\n", int(omp_get_num_teams()));
                     return workDiv.m_gridBlockExtent;
                 }
             };
@@ -136,6 +137,7 @@ namespace alpaka
                 -> vec::Vec<TDim, TIdx>
                 {
                     alpaka::ignore_unused(workDiv);
+                    printf("getWorkDiv Threads %d\n", int(omp_get_num_threads()));
                     return vec::Vec<TDim, TIdx>(static_cast<TIdx>(omp_get_num_threads()));
                 }
             };
@@ -156,6 +158,7 @@ namespace alpaka
                     WorkDivOmp4BuiltIn<TDim, TIdx> const & workDiv)
                 -> vec::Vec<TDim, TIdx>
                 {
+                    printf("getWorkDiv Elems %d\n", int(workDiv.m_threadElemExtent[0]));
                     return workDiv.m_threadElemExtent;
                 }
             };
