@@ -19,8 +19,8 @@ make vectorAdd
 ./example/vectorAdd/vectorAdd
 ```
 If the run is successful, the last output line will be `Execution results
-correct!` otherwise it will print item where the result from the offload code
-disagrees with the expected result (which may be many) and print `Execution results
+correct!` otherwise it will print items where the result from the offload code
+disagrees with the expected result and print `Execution results
 incorrect!` at the end.
 
 ## Examples compilation status
