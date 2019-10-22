@@ -218,7 +218,8 @@ auto main()
         std::cout << "Time for kernel execution: " << std::chrono::duration<double>(endT-beginT).count() << 's' << std::endl;
     }
 
-    bool resultCorrect(true);
+    int falseResults = 0;
+    static constexpr int NUM_FALSE_RESULTS = 20;
     for(Idx i(0u);
         i < numElements;
         ++i)
@@ -227,19 +228,21 @@ auto main()
         Data const correctResult(pBufHostA[i] + pBufHostB[i]);
         if(val != correctResult)
         {
-            std::cerr << "C[" << i << "] == " << val << " != " << correctResult << std::endl;
-            resultCorrect = false;
+            if (falseResults < NUM_FALSE_RESULTS)
+                std::cerr << "C[" << i << "] == " << val << " != " << correctResult << std::endl;
+            ++falseResults;
         }
     }
 
-    if(resultCorrect)
+    if(falseResults == 0)
     {
         std::cout << "Execution results correct!" << std::endl;
         return EXIT_SUCCESS;
     }
     else
     {
-        std::cout << "Execution results incorrect!" << std::endl;
+        std::cout << "Found " << falseResults << " false results, printed no more than " << NUM_FALSE_RESULTS << "\n"
+            << "Execution results incorrect!" << std::endl;
         return EXIT_FAILURE;
     }
 #endif
