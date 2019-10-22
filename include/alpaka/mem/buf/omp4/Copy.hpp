@@ -440,6 +440,9 @@ namespace alpaka
                     {
                         ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
+                        auto * ptr = mem::view::getPtrNative(viewSrc);
+                        std::cout << "copy from host [0,10,100]:\t" << ptr[0] << '\t' << ptr[10] << '\t' << ptr[100] << std::endl;
+
                         return
                             mem::view::omp4::detail::TaskCopyOmp4<
                                 TDim,
