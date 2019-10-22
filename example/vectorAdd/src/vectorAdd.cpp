@@ -55,6 +55,7 @@ public:
             "The VectorAddKernel expects 1-dimensional indices!");
 
         TIdx const gridThreadIdx(alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u]);
+        // printf("gridThreadIdx=%d\n", (int)gridThreadIdx);
         TIdx const threadElemExtent(alpaka::workdiv::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)[0u]);
         TIdx const threadFirstElemIdx(gridThreadIdx * threadElemExtent);
 
@@ -64,6 +65,8 @@ public:
             // The result is uniform for all but the last thread.
             TIdx const threadLastElemIdx(threadFirstElemIdx+threadElemExtent);
             TIdx const threadLastElemIdxClipped((numElements > threadLastElemIdx) ? threadLastElemIdx : numElements);
+            // printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d\n",
+            //         (int)threadFirstElemIdx, (int)threadElemExtent, (int)numElements, (int)threadLastElemIdx);
 
             for(TIdx i(threadFirstElemIdx); i<threadLastElemIdxClipped; ++i)
             {
@@ -215,7 +218,10 @@ auto main()
         auto beginT = std::chrono::high_resolution_clock::now();
         alpaka::mem::view::copy(queue, bufHostC, bufAccC, extent);
         const auto endT = std::chrono::high_resolution_clock::now();
-        std::cout << "Time for kernel execution: " << std::chrono::duration<double>(endT-beginT).count() << 's' << std::endl;
+        std::cout << "Time for copy down: " << std::chrono::duration<double>(endT-beginT).count() << 's' << std::endl;
+        std::cout << "got [0,100,1000]:\t" << pBufHostC[0] << '\t' << pBufHostC[100] << '\t' << pBufHostC[1000] << std::endl;
+        std::cout << "A [0,100,1000]: \t"   << pBufHostA[0] << '\t' << pBufHostA[100] << '\t' << pBufHostA[1000] << std::endl;
+        std::cout << "B [0,100,1000]: \t"   << pBufHostB[0] << '\t' << pBufHostB[100] << '\t' << pBufHostB[1000] << std::endl;
     }
 
     int falseResults = 0;
