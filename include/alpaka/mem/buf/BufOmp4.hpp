@@ -104,7 +104,8 @@ namespace alpaka
                         BufOmp4Impl& operator=(BufOmp4Impl&&) = default;
                             ~BufOmp4Impl()
                         {
-                            omp_target_free(m_pMem, m_dev.m_iDevice);
+                            // omp_target_free(m_pMem, m_dev.m_iDevice);
+                            delete[] m_pMem;
                         }
                     };
                 }
@@ -333,9 +334,11 @@ namespace alpaka
                         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
                         auto const width(extent::getWidth(extent));
-                        auto const widthBytes(width * static_cast<TIdx>(sizeof(TElem)));
+                        // auto const widthBytes(width * static_cast<TIdx>(sizeof(TElem)));
 
-                        void * memPtr = omp_target_alloc(widthBytes, dev.m_iDevice);
+                        // void * memPtr = omp_target_alloc(widthBytes, dev.m_iDevice);
+                        TElem * memPtr = new TElem[width];
+#pragma omp target enter data map (alloc: memPtr)
                         std::cerr << "alloc'd device ptr: " << memPtr << '\n';
 
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL

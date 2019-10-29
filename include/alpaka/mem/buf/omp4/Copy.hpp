@@ -116,6 +116,24 @@ namespace alpaka
                         void * m_dstMemNative;
                         void const * m_srcMemNative;
                     };
+
+                    template<
+                        typename TViewDst,
+                        typename TViewSrc,
+                        typename TExtent>
+                    struct TaskCopyOmp4_CPUtoOmp4 : public TaskCopyOmp4<TViewDst, TViewSrc, TExtent>
+                    {
+                        using TaskCopyOmp4<TViewDst, TViewSrc, TExtent>::TaskCopyOmp4;
+                    };
+
+                    template<
+                        typename TViewDst,
+                        typename TViewSrc,
+                        typename TExtent>
+                    struct TaskCopyOmp4_Omp4toCPU : public TaskCopyOmp4<TViewDst, TViewSrc, TExtent>
+                    {
+                        using TaskCopyOmp4<TViewDst, TViewSrc, TExtent>::TaskCopyOmp4;
+                    };
                 }
             }
 
@@ -125,6 +143,7 @@ namespace alpaka
             {
                 namespace omp4
                 {
+#if 0
                     namespace detail
                     {
                         //#############################################################################
@@ -167,6 +186,7 @@ namespace alpaka
                             }
                         };
                     }
+#endif
                 }
 
                 //#############################################################################
@@ -187,7 +207,7 @@ namespace alpaka
                         TViewDst & viewDst,
                         TViewSrc const & viewSrc,
                         TExtent const & extent)
-                    -> mem::view::omp4::detail::TaskCopyOmp4<
+                    -> mem::view::omp4::detail::TaskCopyOmp4_CPUtoOmp4<
                         TViewDst,
                         TViewSrc,
                         TExtent>
@@ -195,7 +215,7 @@ namespace alpaka
                         ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
                         return
-                            mem::view::omp4::detail::TaskCopyOmp4<
+                            mem::view::omp4::detail::TaskCopyOmp4_CPUtoOmp4<
                                 TViewDst,
                                 TViewSrc,
                                 TExtent>(
@@ -226,7 +246,7 @@ namespace alpaka
                         TViewDst & viewDst,
                         TViewSrc const & viewSrc,
                         TExtent const & extent)
-                    -> mem::view::omp4::detail::TaskCopyOmp4<
+                    -> mem::view::omp4::detail::TaskCopyOmp4_Omp4toCPU<
                         TViewDst,
                         TViewSrc,
                         TExtent>
@@ -234,7 +254,7 @@ namespace alpaka
                         ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
                         return
-                            mem::view::omp4::detail::TaskCopyOmp4<
+                            mem::view::omp4::detail::TaskCopyOmp4_Omp4toCPU<
                                 TViewDst,
                                 TViewSrc,
                                 TExtent>(
@@ -247,6 +267,7 @@ namespace alpaka
                     }
                 };
 
+#if 0
                 //#############################################################################
                 //! The Omp4 to Omp4 memory copy trait specialization.
                 template<
@@ -285,6 +306,7 @@ namespace alpaka
                                     );
                     }
                 };
+#endif
             }
         }
     }
@@ -300,7 +322,7 @@ namespace alpaka
                 typename TViewDst>
             struct Enqueue<
                 queue::QueueOmp4Blocking,
-                mem::view::omp4::detail::TaskCopyOmp4<TViewDst, TViewSrc, TExtent>>
+                mem::view::omp4::detail::TaskCopyOmp4_CPUtoOmp4<TViewDst, TViewSrc, TExtent>>
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto enqueue(
@@ -328,9 +350,57 @@ namespace alpaka
 
                     alpaka::ignore_unused(queue); //! \TODO
 
-                    ALPAKA_OMP4_CHECK(
-                        omp_target_memcpy(
-                            dstNativePtr, const_cast<void*>(srcNativePtr), extentWidthBytes, 0,0, iDstDev, iSrcDev));
+                    std::cout << "Omp4 copy (HtoD)" << srcNativePtr<< " (" << iSrcDev << ") to "
+                        << dstNativePtr << " (" << iDstDev << ")"<< std::endl;
+                    memcpy(dstNativePtr, srcNativePtr, extentWidthBytes);
+#pragma omp target enter data map (to: dstNativePtr)
+                    // ALPAKA_OMP4_CHECK(
+                    //     omp_target_memcpy(
+                    //         dstNativePtr, const_cast<void*>(srcNativePtr), extentWidthBytes, 0,0, iDstDev, iSrcDev));
+                }
+            };
+
+            template<
+                typename TExtent,
+                typename TViewSrc,
+                typename TViewDst>
+            struct Enqueue<
+                queue::QueueOmp4Blocking,
+                mem::view::omp4::detail::TaskCopyOmp4_Omp4toCPU<TViewDst, TViewSrc, TExtent>>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST static auto enqueue(
+                    queue::QueueOmp4Blocking & queue,
+                    mem::view::omp4::detail::TaskCopyOmp4<TViewDst, TViewSrc, TExtent> const & task)
+                -> void
+                {
+                    ALPAKA_DEBUG_FULL_LOG_SCOPE;
+
+#if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
+                    task.printDebug();
+#endif
+                    if(task.m_extentWidthBytes == 0)
+                    {
+                        return;
+                    }
+
+                    auto const & iDstDev(task.m_iDstDevice);
+                    auto const & iSrcDev(task.m_iSrcDevice);
+
+                    auto const & extentWidthBytes(task.m_extentWidthBytes);
+
+                    auto const & dstNativePtr(task.m_dstMemNative);
+                    auto const & srcNativePtr(task.m_srcMemNative);
+
+                    alpaka::ignore_unused(queue); //! \TODO
+
+                    std::cout << "Omp4 copy (DtoH) " << srcNativePtr<< " (" << iSrcDev << ") to "
+                        << dstNativePtr << " (" << iDstDev << ")"<< std::endl;
+#pragma omp target exit data map (from: srcNativePtr)
+                    memcpy(dstNativePtr, srcNativePtr, extentWidthBytes);
+                    // ALPAKA_OMP4_CHECK(
+                    //     omp_target_memcpy(
+                    //         dstNativePtr, const_cast<void*>(srcNativePtr), extentWidthBytes, 0,0, iDstDev, iSrcDev));
                 }
             };
         }
