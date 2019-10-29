@@ -61,6 +61,12 @@ public:
         TIdx const threadElemExtent(alpaka::workdiv::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)[0u]);
         TIdx const threadFirstElemIdx(gridThreadIdx * threadElemExtent);
 
+        printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, gridThreadIdx=%d"
+                ", omp_get_team_num=%d, omp_get_thread_num=%d"
+                ", A=%#llx, B=%#llx, C=%#llx\n"
+                , int(threadFirstElemIdx), int(threadElemExtent), int(numElements), int(gridThreadIdx)
+                , int(omp_get_team_num()), int(omp_get_thread_num())
+                , (unsigned long long int)(A),(unsigned long long int)(B),(unsigned long long int)(C));
         if(threadFirstElemIdx < numElements)
         {
             // Calculate the number of elements to compute in this thread.
@@ -68,12 +74,15 @@ public:
             TIdx const threadLastElemIdx(threadFirstElemIdx+threadElemExtent);
             TIdx const threadLastElemIdxClipped((numElements > threadLastElemIdx) ? threadLastElemIdx : numElements);
             const TIdx j(threadFirstElemIdx);
-            printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d threadLastElemIdxClipped=%d j=%d A=%d B=%d\n",
-                    int(threadFirstElemIdx), int(threadElemExtent), int(numElements), int(threadLastElemIdx), int(threadLastElemIdxClipped),
-                    int(j), int(0) , int(0));
+            // printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d threadLastElemIdxClipped=%d j=%d A=%d B=%d\n",
+            //         int(threadFirstElemIdx), int(threadElemExtent), int(numElements), int(threadLastElemIdx), int(threadLastElemIdxClipped),
+            //         int(j), int(0) , int(0));
 
             for(TIdx i(threadFirstElemIdx); i<threadLastElemIdxClipped; ++i)
             {
+                printf("i=%d, threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d threadLastElemIdxClipped=%d A=%d B=%d\n",
+                        int(i), int(threadFirstElemIdx), int(threadElemExtent), int(numElements), int(threadLastElemIdx), int(threadLastElemIdxClipped),
+                        int(0) , int(0));
                 // printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d j=%d A=%d B=%d\n",
                 //     int(threadFirstElemIdx), int(threadElemExtent), int(numElements), int(threadLastElemIdx),
                 //     int(i), int(0) , int(0));
