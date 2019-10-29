@@ -52,6 +52,7 @@ template<
 static void printArg(T* t)
 {
     std::cerr << "Ptr Arg: ptr=" << t << '\n';
+// #pragma omp target enter data is_device_ptr(t)
 }
 
 static void printArgs() {}
