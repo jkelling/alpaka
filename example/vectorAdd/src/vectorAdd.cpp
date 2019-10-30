@@ -116,7 +116,7 @@ auto main()
     QueueAcc queue(devAcc);
 
     // Define the work division
-    Idx const numElements(12345678);
+    Idx const numElements(12345);
     Idx const elementsPerThread(8u);
     alpaka::vec::Vec<Dim, Idx> const extent(numElements);
 
