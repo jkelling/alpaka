@@ -82,7 +82,7 @@ public:
             {
                 printf("i=%d, threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d threadLastElemIdxClipped=%d A=%d B=%d\n",
                         int(i), int(threadFirstElemIdx), int(threadElemExtent), int(numElements), int(threadLastElemIdx), int(threadLastElemIdxClipped),
-                        int(0) , int(0));
+                        int(A[i]) , int(B[i]));
                 // printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, threadLastElemIdx=%d j=%d A=%d B=%d\n",
                 //     int(threadFirstElemIdx), int(threadElemExtent), int(numElements), int(threadLastElemIdx),
                 //     int(i), int(0) , int(0));
@@ -154,7 +154,7 @@ auto main()
     QueueAcc queue(devAcc);
 
     // Define the work division
-    Idx const numElements(12345);
+    Idx const numElements(123);
     Idx const elementsPerThread(8u);
     alpaka::vec::Vec<Dim, Idx> const extent(numElements);
 

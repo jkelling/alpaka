@@ -65,6 +65,44 @@ static void printArgs(const T& t, Args... args)
     printArgs(std::forward<Args>(args)...);
 }
 
+///////////////
+
+#if 0
+template<class... Tuple>
+static std::tuple<Tuple...> filter(std::tuple<Tuple...> &&tuple)
+{
+    return tuple;
+}
+
+template<class T, class... Args, class... Tuple>
+static auto filter(std::tuple<Tuple...> &&tuple, const T& t, Args... args)
+    -> decltype(filter(tuple, std::forward<Args>(args)...))
+{
+    return filter(tuple, std::forward<Args>(args)...);
+}
+
+template<class T, class... Args, class... Tuple>
+static auto filter(std::tuple<Tuple...> tuple, T* t, Args... args)
+    -> decltype(filter(std::tuple_cat(tuple, std::make_tuple(t)), std::forward<Args>(args)...))
+{
+    return filter(std::tuple_cat(std::forward(tuple), std::make_tuple(t)), std::forward<Args>(args)...);
+}
+
+template<class T, class... Args>
+static auto filterT(const T& t, Args... args)
+    -> decltype(filterT(std::forward<Args>(args)...))
+{
+    return filterT(std::forward<Args>(args)...);
+}
+
+template<class T, class... Args>
+static auto filterT(T* t, Args... args)
+    -> decltype(filter(std::make_tuple(t), std::forward<Args>(args)...))
+{
+    return filter(std::make_tuple(t), std::forward<Args>(args)...);
+}
+#endif
+
 namespace alpaka
 {
     namespace kernel
@@ -176,6 +214,7 @@ namespace alpaka
                 ::omp_set_dynamic(0);
 
                 meta::apply([&](TArgs ... args){printArgs(std::forward<TArgs>(args)...);}, m_args);
+                auto ptrArgs = meta::apply([&](TArgs ... args){filterT(std::forward<TArgs>(args)...);}, m_args);
 
                 // `When an if(scalar-expression) evaluates to false, the structured block is executed on the host.`
                 auto argsD = m_args;
