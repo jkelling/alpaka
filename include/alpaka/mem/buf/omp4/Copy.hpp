@@ -353,6 +353,8 @@ namespace alpaka
                                 return;
                             }
 
+                            std::cout << "Omp4 copy " << srcNativePtr<< " (" << iSrcDev << ") to "
+                                << dstNativePtr << " (" << iDstDev << ")"<< std::endl;
                             ALPAKA_OMP4_CHECK(
                                 omp_target_memcpy(
                                     m_dstMemNative, const_cast<void*>(m_srcMemNative), m_extentWidthBytes,
