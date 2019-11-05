@@ -331,6 +331,8 @@ namespace alpaka
 
                     alpaka::ignore_unused(queue); //! \TODO
 
+                    std::cout << "Omp4 copy " << srcNativePtr<< " (" << iSrcDev << ") to "
+                        << dstNativePtr << " (" << iDstDev << ")"<< std::endl;
                     ALPAKA_OMP4_CHECK(
                         omp_target_memcpy(
                             dstNativePtr, const_cast<void*>(srcNativePtr), extentWidthBytes, 0,0, iDstDev, iSrcDev));

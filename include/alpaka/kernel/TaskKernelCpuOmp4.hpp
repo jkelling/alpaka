@@ -208,7 +208,7 @@ namespace alpaka
                 ::omp_set_dynamic(0);
 
                 meta::apply([&](TArgs ... args){printArgs(std::forward<TArgs>(args)...);}, m_args);
-                auto ptrArgs = meta::apply([&](TArgs ... args){filterT(std::forward<TArgs>(args)...);}, m_args);
+                // auto ptrArgs = meta::apply([&](TArgs ... args){filterT(std::forward<TArgs>(args)...);}, m_args);
 
                 // `When an if(scalar-expression) evaluates to false, the structured block is executed on the host.`
                 auto argsD = m_args;

@@ -336,7 +336,7 @@ namespace alpaka
                         auto const widthBytes(width * static_cast<TIdx>(sizeof(TElem)));
 
                         void * memPtr = omp_target_alloc(widthBytes, dev.m_iDevice);
-                        std::cerr << "alloc'd device ptr: " << memPtr << '\n';
+                        std::cerr << "alloc'd device ptr: " << memPtr << " ( " << widthBytes << " B on device " << dev.m_iDevice << " )" << '\n';
 
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
                         std::cout << __func__
