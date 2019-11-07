@@ -115,7 +115,7 @@ namespace alpaka
                     WorkDivOmp4BuiltIn<TDim, TIdx> const & workDiv)
                 -> vec::Vec<TDim, TIdx>
                 {
-                    printf("getWorkDiv Blocks %d\n", int(omp_get_num_teams()));
+                    printf("getWorkDiv Blocks %d (teams=%d )\n", workDiv.m_gridBlockExtent[0], int(omp_get_num_teams()));
                     return workDiv.m_gridBlockExtent;
                 }
             };
