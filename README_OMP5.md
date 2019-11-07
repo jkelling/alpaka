@@ -69,3 +69,21 @@ incorrect!` at the end.
     [100%] Linking CXX executable vectorAdd
     nvlink error   : Undefined reference to '__assert_fail' in '/tmp/yn622878/login-g_6260/main-83ce50.cubin'
     clang-9: error: nvlink command failed with exit code 255 (use -v to see invocation)
+
+### branch omp4DataEnterMapWorkaround
+
+|target|compiler|compile status|target|run status|
+|---|---|---|---|---|
+|vectorAdd|
+||GGC 9.1 | ok|nvptx| ok, no GPU |
+||AOMP 0.7-4|ok|x86|ok|
+||AOMP 0.7-4|linker: multiple def. of gpuHeap (1)|amdhsa|--|
+
+#### errors:
+1. error: Linking globals named 'gpuHeap': symbol multiply defined!
+    /usr/bin/ld: cannot find a.out-openmp-amdgcn-amd-amdhsa-gfx900
+    /usr/bin/ld: cannot find a.out-openmp-amdgcn-amd-amdhsa-gfx900
+    clang-9: error: amdgcn-link command failed with exit code 1 (use -v to see 
+    invocation)
+    clang-9: error: linker command failed with exit code 1 (use -v to see 
+    invocation)
