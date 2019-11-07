@@ -71,6 +71,7 @@ incorrect!` at the end.
 |---|---|---|---|---|
 |vectorAdd|
 ||GGC 9.1 | ok|nvptx| ok, no GPU |
+||GGC 9.2 (claix)| ok|nvptx| ok, no GPU (nvprof shows memcpy, no kernels)|
 ||AOMP 0.7-4|ok|x86|ok|
 ||AOMP 0.7-4|linker: multiple def. of gpuHeap (1)|amdhsa|--|
 
