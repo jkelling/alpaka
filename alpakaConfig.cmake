@@ -401,11 +401,11 @@ IF(ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE OR ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE OR A
         ENDIF()
 
         # clang versions beginning with 3.9 support OpenMP 4.0 but only when given the corresponding flag
-        IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            IF(ALPAKA_ACC_CPU_BT_OMP4_ENABLE)
-                LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "-fopenmp-version=40")
-            ENDIF()
-        ENDIF()
+        # IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        #     IF(ALPAKA_ACC_CPU_BT_OMP4_ENABLE)
+        #         LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "-fopenmp-version=40")
+        #     ENDIF()
+        # ENDIF()
     ENDIF()
 ENDIF()
 
