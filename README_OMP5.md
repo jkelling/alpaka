@@ -79,6 +79,7 @@ incorrect!` at the end.
 ||GGC 9.2 (claix)| ok|nvptx| ok, no GPU (nvprof shows memcpy, no kernels)|
 ||AOMP 0.7-4|ok|x86|ok|
 ||AOMP 0.7-4|linker: multiple def. of gpuHeap (1)|amdhsa|--|
+||LLVM 9.0 (claix)|ok, with -O2|nvptx|error in target region (2)|
 
 #### errors:
 1. error: Linking globals named 'gpuHeap': symbol multiply defined!
@@ -88,3 +89,4 @@ incorrect!` at the end.
     invocation)
     clang-9: error: linker command failed with exit code 1 (use -v to see 
     invocation)
+2. Libomptarget fatal error 1: failure of target construct while offloading is mandatory
