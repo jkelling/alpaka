@@ -11392,6 +11392,8 @@ FP step(FP start, FP direction, uint64_t steps) {
 // But without the subtraction to allow for INFINITY in comparison
 bool marginComparison(double lhs, double rhs, double margin) {
     return (lhs + margin >= rhs) && (rhs + margin >= lhs);
+    // auto ulpDiff = std::abs((FP)(lc.i - rc.i));
+    // return ulpDiff <= maxUlpDiff;
 }
 
 template <typename FloatingPoint>
