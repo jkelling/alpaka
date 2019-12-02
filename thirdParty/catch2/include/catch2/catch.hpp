@@ -9368,7 +9368,7 @@ bool almostEqualUlps(FP lhs, FP rhs, int maxUlpDiff) {
         return lhs == rhs;
     }
 
-    auto ulpDiff = std::abs(lc.i - rc.i);
+    auto ulpDiff = std::abs((FP)(lc.i - rc.i));
     return ulpDiff <= maxUlpDiff;
 }
 
