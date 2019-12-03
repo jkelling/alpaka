@@ -36,6 +36,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
+#include <algorithm>
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
     #include <iostream>
 #endif
