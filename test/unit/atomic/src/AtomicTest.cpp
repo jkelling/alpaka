@@ -968,11 +968,28 @@ struct TestTemplate
     }
 };
 
+template<typename B>
+struct not_omp4 : public std::integral_constant<
+    bool,
+    !bool(std::is_same<
+        alpaka::acc::AccCpuOmp4<
+            alpaka::dim::DimInt<1u>,
+            std::size_t>,
+        B>::value
+    )>
+{};
+
 TEST_CASE( "atomicOperationsWorking", "[atomic]")
 {
-    using TestAccs = alpaka::test::acc::EnabledAccs<
-        alpaka::dim::DimInt<1u>,
-        std::size_t>;
+    // using TestAccs = alpaka::test::acc::EnabledAccs<
+    //     alpaka::dim::DimInt<1u>,
+    //     std::size_t>;
+    using TestAccs = alpaka::meta::Filter<
+        alpaka::test::acc::EnabledAccs<
+            alpaka::dim::DimInt<1u>,
+            std::size_t>,
+            not_omp4
+            >;
 
     alpaka::meta::forEachType< TestAccs >( TestTemplate() );
 }
