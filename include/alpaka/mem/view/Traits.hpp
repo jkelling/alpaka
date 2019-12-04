@@ -115,8 +115,9 @@ namespace alpaka
                         -> idx::Idx<TView>
                         {
                             return
-                                extent::getExtent<dim::Dim<TView>::value - 1u>(view)
-                                * sizeof(elem::Elem<TView>);
+                                static_cast<idx::Idx<TView>>(
+                                    static_cast<unsigned int>(extent::getExtent<static_cast<unsigned int>(dim::Dim<TView>::value) - 1u>(view))
+                                    * sizeof(elem::Elem<TView>));
                         }
                     };
                     //#############################################################################
