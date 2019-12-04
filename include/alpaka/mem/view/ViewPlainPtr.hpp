@@ -15,6 +15,7 @@
 #include <alpaka/dev/DevCpu.hpp>
 #include <alpaka/dev/DevCudaRt.hpp>
 #include <alpaka/dev/DevHipRt.hpp>
+#include <alpaka/dev/DevOmp4.hpp>
 
 namespace alpaka
 {
@@ -377,6 +378,39 @@ namespace alpaka
                                 alpaka::dim::Dim<TExtent>,
                                 alpaka::idx::Idx<TExtent>>(
                                     pMemAcc,
+                                    dev,
+                                    extent);
+                    }
+                };
+#endif
+
+#ifdef ALPAKA_ACC_CPU_BT_OMP4_ENABLED
+                //#############################################################################
+                //! The Omp4 device CreateStaticDevMemView trait specialization.
+                //! \todo What ist this for? Does this exist in OMP4?
+                template<>
+                struct CreateStaticDevMemView<
+                    dev::DevOmp4>
+                {
+                    //-----------------------------------------------------------------------------
+                    template<
+                        typename TElem,
+                        typename TExtent>
+                    static auto createStaticDevMemView(
+                        TElem * pMem,
+                        dev::DevOmp4 const & dev,
+                        TExtent const & extent)
+#ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+                    -> alpaka::mem::view::ViewPlainPtr<dev::DevOmp4, TElem, alpaka::dim::Dim<TExtent>, alpaka::idx::Idx<TExtent>>
+#endif
+                    {
+                        return
+                            alpaka::mem::view::ViewPlainPtr<
+                                dev::DevOmp4,
+                                TElem,
+                                alpaka::dim::Dim<TExtent>,
+                                alpaka::idx::Idx<TExtent>>(
+                                    pMem,
                                     dev,
                                     extent);
                     }
