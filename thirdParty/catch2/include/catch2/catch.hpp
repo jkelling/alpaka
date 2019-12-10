@@ -12,6 +12,7 @@
 #define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 // start catch.hpp
 
+#include <limits>
 
 #define CATCH_VERSION_MAJOR 2
 #define CATCH_VERSION_MINOR 11
@@ -11342,7 +11343,7 @@ namespace {
             return lhs == rhs;
         }
 
-        auto ulpDiff = std::abs(lc - rc);
+        auto ulpDiff = std::abs((FP)(lc - rc));
         return static_cast<uint64_t>(ulpDiff) <= maxUlpDiff;
     }
 
@@ -11471,14 +11472,14 @@ namespace Floating {
 
         ret << " ([";
         if (m_type == FloatingPointKind::Double) {
-            write(ret, step(m_target, static_cast<double>(-INFINITY), m_ulps));
+            write(ret, step(m_target, -std::numeric_limits<double>::infinity(), m_ulps));
             ret << ", ";
-            write(ret, step(m_target, static_cast<double>( INFINITY), m_ulps));
+            write(ret, step(m_target,  std::numeric_limits<double>::infinity(), m_ulps));
         } else {
             // We have to cast INFINITY to float because of MinGW, see #1782
-            write(ret, step(static_cast<float>(m_target), static_cast<float>(-INFINITY), m_ulps));
-            ret << ", ";
-            write(ret, step(static_cast<float>(m_target), static_cast<float>( INFINITY), m_ulps));
+            write(ret, step(static_cast<float>(m_target), -std::numeric_limits<float>::infinity(), m_ulps));
+            ret << ", ";                                                                        
+            write(ret, step(static_cast<float>(m_target),  std::numeric_limits<float>::infinity(), m_ulps));
         }
         ret << "])";
 
