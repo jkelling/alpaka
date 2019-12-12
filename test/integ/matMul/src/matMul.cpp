@@ -83,6 +83,10 @@ public:
         // Shared memory used to store the current blocks of A and B.
         auto * const pBlockSharedA(alpaka::block::shared::dyn::getMem<TElem>(acc));
         auto * const pBlockSharedB(pBlockSharedA + blockThreadExtentX*blockThreadExtentY);
+        // printf("smem ptrA=%#llx ptrB=%#llx sizeA=%d\n",
+        //         (unsigned long long int)(pBlockSharedA),
+        //         (unsigned long long int)(pBlockSharedB),
+        //         (unsigned int)(blockThreadExtentX*blockThreadExtentY));
 
         auto const sharedBlockIdx1d(blockThreadIdxY*blockThreadExtentX + blockThreadIdxX);
 
@@ -90,6 +94,11 @@ public:
         bool const insideA(gridThreadIdxY < m);
         bool const insideB(gridThreadIdxX < n);
         bool const insideC(insideA && insideB);
+        printf("inside A=%d, B=%d, C=%d;\tm=%d, n=%d;\tgtY=%d, gtX=%d;\tbtY=%d, btX=%d\n",
+                (int)(insideA),(int)(insideB),(int)(insideC),
+                (int)(m),(int)(n),
+                (int)(gridThreadIdxY),(int)(gridThreadIdxX),
+                (int)(blockThreadIdxY),(int)(blockThreadIdxX));
 
         TElem dotProduct(0);
 
@@ -113,6 +122,8 @@ public:
                 ((!insideB) || (BIdxY>=k))
                 ? static_cast<TElem>(0)
                 : B[BIdx1d]);
+            printf("global[AIdx=%d BIdx=%d] shared[%d] A=%d B=%d\n",
+                AIdx1d, BIdx1d, sharedBlockIdx1d, pBlockSharedA[sharedBlockIdx1d], pBlockSharedB[sharedBlockIdx1d]);
 
             // Synchronize to make sure the complete blocks are loaded before starting the computation.
             alpaka::block::sync::syncBlockThreads(acc);
@@ -137,6 +148,7 @@ public:
         {
             auto const CIdx1d(gridThreadIdxY*ldc + gridThreadIdxX);
             C[CIdx1d] = alpha * dotProduct + beta * C[CIdx1d];
+            printf("C[%d] = %d\n",CIdx1d, C[CIdx1d]);
         }
     }
 };

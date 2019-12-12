@@ -173,6 +173,8 @@ namespace alpaka
                             std::cout << "TaskCopyOmp4<" << TDim::value << ",...>::ctor\tdstExtent="
                             << alpaka::extent::getExtentVec(viewDst) << ", m_dstExtent=" << dstExtent << std::endl;
 #endif
+                            // std::cout << "TaskCopyOmp4<" << TDim::value << ",...>::ctor\tdstExtent="
+                            // << alpaka::extent::getExtentVec(viewDst) << ", m_dstExtent=" << m_dstExtent << std::endl;
                         }
 
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
@@ -234,10 +236,10 @@ namespace alpaka
                                     srcExtentFull[i] = m_srcPitchBytes[i]/m_srcPitchBytes[i+1];
                                 }
 
-                                // std::cout << "copy " << TDim::value << "d\textent=" << m_extent
-                                //     << "\tdstExtentFull=" << dstExtentFull << " (p " << m_dstPitchBytes
-                                //     << " )\tsrcExtentFull=" << srcExtentFull << " (p " << m_srcPitchBytes
-                                //     << " )\telementSize=" << elementSize << std::endl;
+                                std::cout << "copy " << TDim::value << "d\textent=" << extent
+                                    << "\tdstExtentFull=" << dstExtentFull << " (p " << dstPitchBytes
+                                    << " )\tsrcExtentFull=" << srcExtentFull << " (p " << srcPitchBytes
+                                    << " )\telementSize=" << elementSize << std::endl;
 
                                 ALPAKA_OMP4_CHECK(
                                     omp_target_memcpy_rect(

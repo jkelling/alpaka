@@ -243,13 +243,15 @@ namespace alpaka
                                 t,
                                 blockSharedMemDynSizeBytes);
 
-                            // printf("acc->threadElemCount %d\n"
-                            //         , int(acc.m_threadElemExtent[0]));
+                            printf("acc->threadElemCount %d\n"
+                                    , int(acc.m_threadElemExtent[0]));
 
                             const TIdx bsup = std::min(static_cast<TIdx>(t + teamCount), gridBlockCount);
                             #pragma omp distribute
                             for(TIdx b = t; b<bsup; ++b)
                             {
+                                printf("bsup=%d b=%d blockThreadCount=%d\n"
+                                        , int(bsup), int(b), int(blockThreadCount));
                                 vec::Vec<dim::DimInt<1u>, TIdx> const gridBlockIdx(b);
                                 // When this is not repeated here:
                                 // error: gridBlockExtent referenced in target region does not have a mappable type
@@ -283,14 +285,18 @@ namespace alpaka
                                         }
                                     }
 #endif
+                                    printf("BEFORE APPLY\n");
                                     meta::apply(
                                         [kernelFnObj, &acc](typename std::decay<TArgs>::type const & ... args)
                                         {
+                                            printf("BEFORE KERNEL\n");
                                             kernelFnObj(
                                                     acc,
                                                     args...);
+                                            printf("AFTER KERNEL\n");
                                         },
                                         argsD);
+                                    printf("AFTER APPLY\n");
 
                                     // Wait for all threads to finish before deleting the shared memory.
                                     // This is done by default if the omp 'nowait' clause is missing

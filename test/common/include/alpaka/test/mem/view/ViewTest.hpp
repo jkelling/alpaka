@@ -169,16 +169,30 @@ namespace alpaka
                     {
                         alpaka::ignore_unused(acc);
 
+                        // const volatile auto begin = beginP;
+                        // const volatile auto end = endP;
+                        // const auto b = (unsigned long long)(&*begin);
+                        // const auto e = (unsigned long long)(&*end);
+                        // printf("VerifyBytesSetKernel: success=%llx byte=%d begin=%llx, end=%llx, len=%d\n",
+                        //         (unsigned long long)(success), (int)(byte),
+                        //         b,e,(int)(e-b));
+                        // *success = false;
                         constexpr auto elemSizeInByte = sizeof(decltype(*begin));
                         for(auto it = begin; it != end; ++it)
                         {
+                            // printf("VerifyBytesSetKernel: it=%llx\n",
+                            //      (unsigned long long)(&*it) );
+                            // if((&*it != nullptr) && (begin != end))
+                            // {
                             auto const& elem = *it;
                             auto const pBytes = reinterpret_cast<std::uint8_t const *>(&elem);
                             for(std::size_t i = 0u; i < elemSizeInByte; ++i)
                             {
                                 ALPAKA_CHECK(*success, pBytes[i] == byte);
                             }
+                            // }
                         }
+                        // printf("VerifyBytesSetKernel: END\n");
                     }
                 };
                 //-----------------------------------------------------------------------------

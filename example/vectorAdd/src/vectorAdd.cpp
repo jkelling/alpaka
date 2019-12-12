@@ -50,15 +50,19 @@ public:
         TIdx const & numElements) const
     -> void
     {
+        printf("BEGIN OF KERNEL\n");
         static_assert(
             alpaka::dim::Dim<TAcc>::value == 1,
             "The VectorAddKernel expects 1-dimensional indices!");
 
+        printf("before getIdx\n");
         TIdx const gridThreadIdx(alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u]);
         // if(gridThreadIdx > 20)
         //     return;
         // printf("gridThreadIdx=%d\n", int(gridThreadIdx));
+        printf("before getWorkDiv\n");
         TIdx const threadElemExtent(alpaka::workdiv::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)[0u]);
+        printf("before threadFirstElemIdx\n");
         TIdx const threadFirstElemIdx(gridThreadIdx * threadElemExtent);
 
         printf("threadFirstElemIdx=%d, threadElemExtent=%d, numElements=%d, gridThreadIdx=%d"
@@ -199,7 +203,7 @@ auto main()
     {
         pBufHostA[i] = dist(eng);
         pBufHostB[i] = dist(eng);
-        pBufHostC[i] = 0;
+        pBufHostC[i] = 42;
     }
 
     // Allocate 3 buffers on the accelerator
@@ -211,7 +215,7 @@ auto main()
     // Copy Host -> Acc
     alpaka::mem::view::copy(queue, bufAccA, bufHostA, extent);
     alpaka::mem::view::copy(queue, bufAccB, bufHostB, extent);
-    alpaka::mem::view::copy(queue, bufAccC, bufHostC, extent);
+    // alpaka::mem::view::copy(queue, bufAccC, bufHostC, extent);
 
     // Instantiate the kernel function object
     VectorAddKernel kernel;

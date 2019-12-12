@@ -96,6 +96,14 @@ namespace alpaka
                     // We assume that the thread id is positive.
                     ALPAKA_ASSERT(::omp_get_thread_num()>=0);
                     // \TODO: Would it be faster to precompute the index and cache it inside an array?
+                    // printf("%dd bt Idx. tnum=%d, wdiv[0]=%d, wdiv[1]=%d\n",
+                    //         TDim::value, ::omp_get_thread_num(),
+                    //         workdiv::getWorkDiv<Block, Threads>(workDiv)[0],
+                    //         workdiv::getWorkDiv<Block, Threads>(workDiv)[1]);
+                    // printf("%dd te Idx. wdiv[0]=%d, wdiv[1]=%d\n",
+                    //         TDim::value, ::omp_get_thread_num(),
+                    //         workdiv::getWorkDiv<Thread, Elems>(workDiv)[0],
+                    //         workdiv::getWorkDiv<Thread, Elems>(workDiv)[1]);
                     return idx::mapIdx<TDim::value>(
                         vec::Vec<dim::DimInt<1u>, TIdx>(static_cast<TIdx>(::omp_get_thread_num())),
                         workdiv::getWorkDiv<Block, Threads>(workDiv));

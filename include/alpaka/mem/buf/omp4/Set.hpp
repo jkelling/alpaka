@@ -111,6 +111,14 @@ namespace alpaka
                                     return true;
                                 }())
                             {
+                                if(dim::Dim<TAcc>::value == 2)
+                                {
+                                    printf("2d gridThreadIdx=(%d, %d)\n", (int)(gridThreadIdx[0]), (int)(gridThreadIdx[1]));
+                                    printf("idxThreadFirstElem=%d (%d, %d)\n", (int)(idx),
+                                            (int)(idxThreadFirstElem[0]), (int)(idxThreadFirstElem[1]));
+                                }
+                                printf("idxThreadFirstElem=%d extentProd=%d, idx=%d, lastIdx=%d\n",
+                                        (int)(idx), (int)(extent.prod()), (int)(idx), (int)(lastIdx));
                                 // assuming elements = {1,1,...,1,n}
                                 for(; idx<lastIdx; ++idx)
                                 {
