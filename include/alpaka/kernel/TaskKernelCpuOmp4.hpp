@@ -202,7 +202,8 @@ namespace alpaka
                 // make sure there is at least on team
                 TIdx const teamCount(std::max(std::min(static_cast<TIdx>(maxOmpThreadCount/blockThreadCount), gridBlockCount), static_cast<TIdx>(1u)));
                 std::cout << "threadElemCount=" << threadElemExtent[0u] << std::endl;
-                std::cout << "teamCount=" << teamCount << "\tgridBlockCount=" << gridBlockCount << std::endl;
+                std::cout << "teamCount=" << teamCount << "\tmaxOmpThreadCount=" << maxOmpThreadCount
+                    << "\tgridBlockCount=" << gridBlockCount << std::endl;
 
                 if(::omp_in_parallel() != 0)
                 {
