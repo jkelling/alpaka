@@ -76,18 +76,18 @@ namespace alpaka
 
                 //#############################################################################
                 //! The blocking queue trait specialization for a blocking CPU queue.
-                template<>
+                template<typename TDev>
                 struct IsBlockingQueue<
-                    alpaka::queue::QueueCpuBlocking>
+                    alpaka::queue::QueueGenericBlocking<TDev>>
                 {
                     static constexpr bool value = true;
                 };
 
                 //#############################################################################
                 //! The blocking queue trait specialization for a non-blocking CPU queue.
-                template<>
+                template<typename TDev>
                 struct IsBlockingQueue<
-                    alpaka::queue::QueueCpuNonBlocking>
+                    alpaka::queue::QueueGenericNonBlocking<TDev>>
                 {
                     static constexpr bool value = false;
                 };
@@ -151,6 +151,11 @@ namespace alpaka
                     ,
                     std::tuple<alpaka::dev::DevHipRt, alpaka::queue::QueueHipRtBlocking>,
                     std::tuple<alpaka::dev::DevHipRt, alpaka::queue::QueueHipRtNonBlocking>
+#endif
+#ifdef ALPAKA_ACC_CPU_BT_OMP4_ENABLED
+                    ,
+                    std::tuple<alpaka::dev::DevOmp4, alpaka::queue::QueueOmp4Blocking>,
+                    std::tuple<alpaka::dev::DevOmp4, alpaka::queue::QueueOmp4NonBlocking>
 #endif
                 >;
         }
