@@ -11,6 +11,7 @@
 
 #include <alpaka/core/Assert.hpp>
 #include <alpaka/core/Unused.hpp>
+#include <alpaka/core/Utility.hpp>
 
 #include <alpaka/dev/Traits.hpp>
 #include <alpaka/event/Traits.hpp>
@@ -317,6 +318,34 @@ namespace alpaka
     {
         namespace traits
         {
+            namespace generic
+            {
+                template<typename TDev>
+                ALPAKA_FN_HOST auto currentThreadWaitForDevice(
+                    TDev const & dev
+                )
+                ->void
+                {
+                    // Get all the queues on the device at the time of invocation.
+                    // All queues added afterwards are ignored.
+                    auto vQueues(
+                        dev::traits::GetAllQueues<TDev>::getAllQueues(dev));
+                    // Furthermore there should not even be a chance to enqueue something between getting the queues and adding our wait events!
+                    std::vector<event::EventGeneric<TDev>> vEvents;
+                    for(auto && spQueue : vQueues)
+                    {
+                        vEvents.emplace_back(dev);
+                        spQueue->enqueue(vEvents.back());
+                    }
+
+                    // Now wait for all the events.
+                    for(auto && event : vEvents)
+                    {
+                        wait::wait(event);
+                    }
+                }
+            }
+
             //#############################################################################
             //! The CPU device event thread wait trait specialization.
             //!
