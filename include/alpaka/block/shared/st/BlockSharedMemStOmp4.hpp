@@ -59,8 +59,13 @@ namespace alpaka
                             char* buf = &m_mem[m_allocdBytes];
                             new (buf) T();
                             m_allocdBytes += sizeof(T);
+                            printf("BlockSharedMemStOmp4::alloc(): thread %d alloc done: %d -%d\n"
+                                , omp_get_thread_num(), m_allocdBytes, (int)(sizeof(T)));
                         }
+                        printf("BlockSharedMemStOmp4::alloc(): thread %d at barrier\n", omp_get_thread_num());
                         #pragma omp barrier
+                        printf("BlockSharedMemStOmp4::alloc(): thread %d after barrier: m_allocdBytes=%d\n"
+                            , omp_get_thread_num(), m_allocdBytes);
                         return *reinterpret_cast<T*>(&m_mem[m_allocdBytes-sizeof(T)]);
                     }
                 };
