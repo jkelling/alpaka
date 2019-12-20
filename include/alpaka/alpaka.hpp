@@ -100,6 +100,7 @@
 #include <alpaka/event/EventCudaRt.hpp>
 #include <alpaka/event/EventHipRt.hpp>
 #include <alpaka/event/EventCpu.hpp>
+#include <alpaka/event/EventOmp4.hpp>
 #include <alpaka/event/Traits.hpp>
 //-----------------------------------------------------------------------------
 // extent
