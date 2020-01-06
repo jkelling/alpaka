@@ -236,9 +236,9 @@ namespace alpaka
                                     srcExtentFull[i] = m_srcPitchBytes[i]/m_srcPitchBytes[i+1];
                                 }
 
-                                std::cout << "copy " << TDim::value << "d\textent=" << extent
-                                    << "\tdstExtentFull=" << dstExtentFull << " (p " << dstPitchBytes
-                                    << " )\tsrcExtentFull=" << srcExtentFull << " (p " << srcPitchBytes
+                                std::cout << "copy " << TDim::value << "d\textent=" << m_extent
+                                    << "\tdstExtentFull=" << dstExtentFull << " (p " << m_dstPitchBytes
+                                    << " )\tsrcExtentFull=" << srcExtentFull << " (p " << m_srcPitchBytes
                                     << " )\telementSize=" << elementSize << std::endl;
 
                                 ALPAKA_OMP4_CHECK(
@@ -355,8 +355,8 @@ namespace alpaka
                                 return;
                             }
 
-                            std::cout << "Omp4 copy " << srcNativePtr<< " (" << iSrcDev << ") to "
-                                << dstNativePtr << " (" << iDstDev << ")"<< std::endl;
+                            std::cout << "Omp4 copy " << m_srcMemNative<< " (" << m_iSrcDevice << ") to "
+                                << m_dstMemNative << " (" << m_iDstDevice << ")"<< std::endl;
                             ALPAKA_OMP4_CHECK(
                                 omp_target_memcpy(
                                     m_dstMemNative, const_cast<void*>(m_srcMemNative), m_extentWidthBytes,
