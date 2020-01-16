@@ -49,9 +49,15 @@ namespace alpaka
                 //-----------------------------------------------------------------------------
                 auto operator=(IdxGbOmp5BuiltIn &&) -> IdxGbOmp5BuiltIn & = delete;
                 //-----------------------------------------------------------------------------
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                virtual
+#endif
                 /*virtual*/ ~IdxGbOmp5BuiltIn() = default;
 
                 TIdx const m_teamOffset; //! \todo what is this for?
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                int m_teamNum = 0;
+#endif
             };
         }
     }
@@ -95,11 +101,16 @@ namespace alpaka
                     TWorkDiv const & workDiv)
                 -> vec::Vec<TDim, TIdx>
                 {
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
+                    const auto teamNum = ::omp_get_team_num();
+#else
+                    const auto teamNum = idx.m_teamNum;
+#endif
                     // We assume that the thread id is positive.
-                    ALPAKA_ASSERT(::omp_get_team_num()>=0);
+                    ALPAKA_ASSERT(teamNum>=0);
                     // \TODO: Would it be faster to precompute the index and cache it inside an array?
                     return idx::mapIdx<TDim::value>(
-                        vec::Vec<dim::DimInt<1u>, TIdx>(static_cast<TIdx>(idx.m_teamOffset + static_cast<TIdx>(::omp_get_team_num()))),
+                        vec::Vec<dim::DimInt<1u>, TIdx>(static_cast<TIdx>(idx.m_teamOffset + static_cast<TIdx>(teamNum))),
                         workdiv::getWorkDiv<Grid, Blocks>(workDiv));
                 }
             };
@@ -120,7 +131,12 @@ namespace alpaka
                     TWorkDiv const &)
                 -> vec::Vec<dim::DimInt<1u>, TIdx>
                 {
-                    return static_cast<TIdx>(idx.m_teamOffset + static_cast<TIdx>(omp_get_team_num()));
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
+                    const auto teamNum = ::omp_get_thread_num();
+#else
+                    const auto teamNum = idx.m_teamNum;
+#endif
+                    return static_cast<TIdx>(idx.m_teamOffset + static_cast<TIdx>(teamNum));
                 }
             };
         }

@@ -29,6 +29,15 @@
 #include <alpaka/queue/QueueGenericThreadsNonBlocking.hpp>
 #include <alpaka/queue/QueueGenericThreadsBlocking.hpp>
 
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
+#include <map>
+#endif
+
 namespace alpaka
 {
     namespace dev
@@ -59,7 +68,9 @@ namespace alpaka
                 {
                 public:
                     //-----------------------------------------------------------------------------
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     DevOmp5Impl(int iDevice) : m_iDevice(iDevice) {}
+#endif
                     //-----------------------------------------------------------------------------
                     DevOmp5Impl(DevOmp5Impl const &) = delete;
                     //-----------------------------------------------------------------------------
@@ -69,7 +80,91 @@ namespace alpaka
                     //-----------------------------------------------------------------------------
                     auto operator=(DevOmp5Impl &&) -> DevOmp5Impl & = delete;
                     //-----------------------------------------------------------------------------
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     ~DevOmp5Impl() = default;
+#else
+                    void spawn(int n)
+                    {
+                        m_threadPool.reserve(n);
+                        m_poolActiveCount = n-m_threadPool.size();
+                        while(m_threadPool.size() < n)
+                        {
+                            m_threadPool.emplace_back([this,n](int threadNum)
+                                {
+                                    unsigned long long prevPoolGeneration = m_poolGeneration;
+                                    {
+                                        std::unique_lock<std::mutex> lock(m_mtxPool);
+                                        if(--m_poolActiveCount == 0)
+                                            m_cvPool.notify_all();
+                                    }
+                                    while(true)
+                                    {
+                                        std::unique_lock<std::mutex> lock(m_mtxPool);
+                                        // std::cout << "Worker " << threadNum << " going to sleep." << std::endl;
+                                        m_cvPool.wait(lock, [this, prevPoolGeneration, threadNum]()
+                                            {
+                                                return prevPoolGeneration < m_poolGeneration
+                                                    && m_poolActiveCount > threadNum;
+                                            });
+                                        // std::cout << "Worker " << threadNum << " woke up." << std::endl;
+                                        lock.unlock();
+                                        if(m_poolTask)
+                                            m_poolTask();
+                                        else
+                                            return;
+                                        // std::cout << "Worker " << threadNum << " done." << std::endl;
+                                        lock.lock();
+                                        // std::cout << "Worker " << threadNum << " decrementing." << std::endl;
+                                        if(--m_poolActiveCount == 0)
+                                            m_cvPool.notify_all();
+                                    }
+                                }, m_threadPool.size());
+                            // std::cout << "Created Worker " << m_threadPool.size()-1 << std::endl;
+                            m_idMap[m_threadPool.back().get_id()] = m_threadPool.size()-1;
+                        }
+                        std::unique_lock<std::mutex> lock(m_mtxPool);
+                        // std::cout << "waiting for new workers to spawn..." << std::endl;
+                        m_cvPool.wait(lock, [this](){return m_poolActiveCount == 0;});
+                        // std::cout << "workers spawned" << std::endl;
+                    }
+
+                    void invoke(std::function<void()> fn, int n)
+                    {
+                        if(n > m_threadPool.size())
+                            spawn(n);
+                        m_poolTask = fn;
+                        ++m_poolGeneration;
+                        m_poolActiveCount = n;
+                        m_cvPool.notify_all();
+                        // std::cout << "notifying " << n << " workers" << std::endl;
+                        std::unique_lock<std::mutex> lock(m_mtxPool);
+                        m_cvPool.wait(lock, [this](){return m_poolActiveCount == 0;});
+                        // std::cout << "workers done" << std::endl;
+                    }
+
+                    DevOmp5Impl(int iDevice)
+                    {
+                        spawn(1);
+                        m_masterThread = m_idMap.begin()->first;
+                    }
+
+                    ~DevOmp5Impl()
+                    {
+                        m_poolActiveCount = m_threadPool.size();
+                        m_poolTask = std::function<void()>();
+                        m_cvPool.notify_all();
+                        for(auto& t : m_threadPool)
+                            t.join();
+                    }
+
+                    std::vector<std::thread> m_threadPool;
+                    unsigned long long m_poolGeneration = 0, m_poolActiveCount = 0;
+                    std::mutex m_mtxPool;
+                    std::condition_variable m_cvPool;
+                    std::function<void()> m_poolTask;
+                    std::map<std::thread::id, int> m_idMap;
+                    std::thread::id m_masterThread;
+#endif
 
                     //-----------------------------------------------------------------------------
                     ALPAKA_FN_HOST auto getAllExistingQueues() const
@@ -170,6 +265,16 @@ namespace alpaka
 
         public:
             std::shared_ptr<omp5::detail::DevOmp5Impl> m_spDevOmp5Impl;
+
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+            void invoke(std::function<void()> fn, int n)
+            {
+                m_spDevOmp5Impl->invoke(fn, n);
+            }
+
+            const std::map<std::thread::id, int> * idMapP() const {return &m_spDevOmp5Impl->m_idMap;}
+            std::thread::id masterThread() const {return m_spDevOmp5Impl->m_masterThread;}
+#endif
         };
     }
 

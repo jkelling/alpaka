@@ -16,6 +16,7 @@
 #endif
 
 #include <alpaka/block/shared/st/Traits.hpp>
+#include <alpaka/block/sync/BlockSyncBarrierOmp.hpp>
 
 #include <type_traits>
 #include <cstdint>
@@ -35,10 +36,21 @@ namespace alpaka
                 {
                     mutable unsigned int m_allocdBytes = 0;
                     mutable char* m_mem;
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                    sync::BlockSyncBarrierOmp& m_sync;
+#endif
 
                 public:
                     //-----------------------------------------------------------------------------
-                    BlockSharedMemStOmp5(char* mem) : m_mem(mem) {}
+                    BlockSharedMemStOmp5(char* mem
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                            , sync::BlockSyncBarrierOmp& sync
+#endif
+                            ) : m_mem(mem)
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                                , m_sync(sync)
+#endif
+                    {}
                     //-----------------------------------------------------------------------------
                     BlockSharedMemStOmp5(BlockSharedMemStOmp5 const &) = delete;
                     //-----------------------------------------------------------------------------
@@ -53,14 +65,25 @@ namespace alpaka
                     template<class T>
                     T& alloc() const
                     {
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                         #pragma omp barrier
                         if(omp_get_thread_num() == 0)
+#else
+                        sync::syncBlockThreads(m_sync);
+                        if(m_sync.m_masterThread == std::this_thread::get_id())
+#endif
                         {
                             char* buf = &m_mem[m_allocdBytes];
                             new (buf) T();
                             m_allocdBytes += sizeof(T);
+                            // printf("BlockSharedMemStOmp4::alloc (master) m_allocdBytes=%d\n", m_allocdBytes);
+
                         }
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                         #pragma omp barrier
+#else
+                        sync::syncBlockThreads(m_sync);
+#endif
                         return *reinterpret_cast<T*>(&m_mem[m_allocdBytes-sizeof(T)]);
                     }
                 };

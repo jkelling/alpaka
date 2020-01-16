@@ -89,6 +89,9 @@ namespace alpaka
                 auto const threadElemExtent(
                     workdiv::getWorkDiv<Thread, Elems>(*this));
 
+                std::cout << "gridBlockExtent= " << gridBlockExtent.prod() <<
+                    "\tblockThreadExtent= " << blockThreadExtent.prod() <<
+                    "\tthreadElemExtent= " << threadElemExtent << std::endl;
                 // Get the size of the block shared dynamic memory.
                 auto const blockSharedMemDynSizeBytes(
                     meta::apply(

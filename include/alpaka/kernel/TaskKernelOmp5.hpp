@@ -42,6 +42,12 @@
     #include <iostream>
 #endif
 
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+#include <vector>
+#include <thread>
+#include <chrono>
+#endif
+
 namespace alpaka
 {
     namespace kernel
@@ -86,7 +92,9 @@ namespace alpaka
             //-----------------------------------------------------------------------------
             //! Executes the kernel function object.
             ALPAKA_FN_HOST auto operator()(
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     const
+#endif
                     dev::DevOmp5& dev
                 ) const
             -> void
@@ -124,7 +132,11 @@ namespace alpaka
                     << " blockSharedMemDynSizeBytes: " << blockSharedMemDynSizeBytes << " B" << std::endl;
 #endif
                 // We have to make sure, that the OpenMP runtime keeps enough threads for executing a block in parallel.
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                 TIdx const maxOmpThreadCount(static_cast<TIdx>(::omp_get_max_threads()));
+#else
+                TIdx const maxOmpThreadCount(256);
+#endif
                 // The number of blocks in the grid.
                 TIdx const gridBlockCount(gridBlockExtent.prod());
                 // The number of threads in a block.
@@ -135,10 +147,16 @@ namespace alpaka
                     std::cout << "Warning: TaskKernelOmp5: maxOmpThreadCount smaller than blockThreadCount requested by caller:" <<
                         maxOmpThreadCount << " < " << blockThreadExtent.prod() << std::endl;
 #endif
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                 // make sure there is at least on team
                 TIdx const teamCount(std::max(std::min(static_cast<TIdx>(maxOmpThreadCount/blockThreadCount), gridBlockCount), static_cast<TIdx>(1u)));
+#else
+                // force one team, teams not implemented -- want to test the more tricky blog-level parallelism
+                TIdx const teamCount(1u);
+#endif
                 std::cout << "threadElemCount=" << threadElemExtent[0u] << std::endl;
                 std::cout << "teamCount=" << teamCount << "\tgridBlockCount=" << gridBlockCount << std::endl;
+                assert(gridBlockCount < 249337);
 
                 if(::omp_in_parallel() != 0)
                 {
@@ -152,10 +170,18 @@ namespace alpaka
                 // `When an if(scalar-expression) evaluates to false, the structured block is executed on the host.`
                 auto argsD = m_args;
                 auto kernelFnObj = m_kernelFnObj;
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                 const auto iDevice = dev.iDevice();
                 #pragma omp target device(iDevice)
+#else
+                #pragma omp target teams
                 {
+                }
+#endif
+                {
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     #pragma omp teams num_teams(teamCount) thread_limit(blockThreadCount)
+#endif
                     {
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
                         // The first team does some checks ...
@@ -180,7 +206,11 @@ namespace alpaka
                             //         , int(acc.m_threadElemExtent[0]));
 
                             const TIdx bsup = std::min(static_cast<TIdx>(t + teamCount), gridBlockCount);
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                             #pragma omp distribute
+#else
+                            assert(teamCount == 1);
+#endif
                             for(TIdx b = t; b<bsup; ++b)
                             {
                                 vec::Vec<dim::DimInt<1u>, TIdx> const gridBlockIdx(b);
@@ -202,8 +232,14 @@ namespace alpaka
                                 // setting num_threads to any value leads XL to run only one thread per team
                                 omp_set_num_threads(static_cast<int>(blockThreadCount));
 #endif
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                                 #pragma omp parallel
+#else
+                                std::mutex mtxIdMap;
+                                std::function<void()> threadKernel([kernelFnObj, &mtxIdMap, &acc, &argsD]()
+#endif
                                 {
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
                                     // The first thread does some checks in the first block executed.
                                     if((::omp_get_thread_num() == 0) && (b == 0))
@@ -215,6 +251,7 @@ namespace alpaka
                                             printf("ERROR: The OpenMP runtime did not use the number of threads that had been requested!\n");
                                         }
                                     }
+#endif
 #endif
                                     meta::apply(
                                         [kernelFnObj, &acc](typename std::decay<TArgs>::type const & ... args)
@@ -229,6 +266,12 @@ namespace alpaka
                                     // This is done by default if the omp 'nowait' clause is missing
                                     //block::sync::syncBlockThreads(acc);
                                 }
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                                );
+                                acc.m_idMap = dev.idMapP();
+                                acc.m_masterThread = dev.masterThread();
+                                dev.invoke(threadKernel, blockThreadCount);
+#endif
 
                                 // After a block has been processed, the shared memory has to be deleted.
                                 block::shared::st::freeMem(acc);
@@ -361,7 +404,11 @@ namespace alpaka
                     queue.m_spQueueImpl->m_bCurrentlyExecutingTask = true;
 
                     task(
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                             queue.m_spQueueImpl->m_dev
+#else
+                            const_cast<dev::DevOmp5&>(queue.m_spQueueImpl->m_dev)
+#endif
                         );
 
                     queue.m_spQueueImpl->m_bCurrentlyExecutingTask = false;
@@ -387,8 +434,12 @@ namespace alpaka
                         [&queue, task]()
                         {
                             task(
-                                    queue.m_spQueueImpl->m_dev
-                                );
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
+                                queue.m_spQueueImpl->m_dev
+#else
+                                const_cast<dev::DevOmp5&>(queue.m_spQueueImpl->m_dev)
+#endif
+                            );
                         });
                 }
             };

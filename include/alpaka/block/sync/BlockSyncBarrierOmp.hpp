@@ -16,6 +16,11 @@
 #include <alpaka/core/Common.hpp>
 #include <alpaka/core/Unused.hpp>
 
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+#include <mutex>
+#include <alpaka/core/BarrierThread.hpp>
+#endif
+
 namespace alpaka
 {
     namespace block
@@ -28,9 +33,18 @@ namespace alpaka
             {
             public:
                 //-----------------------------------------------------------------------------
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                 ALPAKA_FN_HOST BlockSyncBarrierOmp() :
                     m_generation(0u)
-                {}
+                {
+                }
+#else
+                ALPAKA_FN_HOST BlockSyncBarrierOmp(int numThreads) :
+                    m_barrier(numThreads),
+                    m_generation(0u)
+                {
+                }
+#endif
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST BlockSyncBarrierOmp(BlockSyncBarrierOmp const &) = delete;
                 //-----------------------------------------------------------------------------
@@ -44,6 +58,13 @@ namespace alpaka
 
                 std::uint8_t mutable m_generation;
                 int mutable m_result[2];
+
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                mutable core::threads::BarrierThread<int> m_barrier;
+                std::thread::id m_masterThread;
+                mutable std::mutex m_mtxAtomic;
+#endif
+
             };
 
             namespace traits
@@ -62,10 +83,15 @@ namespace alpaka
 
                         // NOTE: This waits for all threads in all blocks.
                         // If multiple blocks are executed in parallel this is not optimal.
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                         #pragma omp barrier
+#else
+                        blockSync.m_barrier.wait();
+#endif
                     }
                 };
 
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                 namespace detail
                 {
                     //#############################################################################
@@ -79,7 +105,11 @@ namespace alpaka
                     {
                         void operator()(int& result, bool value)
                         {
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                            std::cout << "WARN: atomic count in SPEC_FAKE_OMP_TARGET_CPU kernel." << std::endl;
+#else
                             #pragma omp atomic
+#endif
                             result += static_cast<int>(value);
                         }
                     };
@@ -90,7 +120,11 @@ namespace alpaka
                     {
                         void operator()(int& result, bool value)
                         {
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                            std::cout << "WARN: atomic and in SPEC_FAKE_OMP_TARGET_CPU kernel." << std::endl;
+#else
                             #pragma omp atomic
+#endif
                             result &= static_cast<int>(value);
                         }
                     };
@@ -101,11 +135,16 @@ namespace alpaka
                     {
                         void operator()(int& result, bool value)
                         {
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                            std::cout << "WARN: atomic or in SPEC_FAKE_OMP_TARGET_CPU kernel." << std::endl;
+#else
                             #pragma omp atomic
+#endif
                             result |= static_cast<int>(value);
                         }
                     };
                 }
+#endif
 
                 //#############################################################################
                 template<
@@ -121,6 +160,11 @@ namespace alpaka
                         int predicate)
                     -> int
                     {
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                        std::lock_guard<std::mutex> lock(blockSync.m_mtxAtomic);
+                        std::cout << "Error: SyncBlockThreadsPredicate in SPEC_FAKE_OMP_TARGET_CPU kernel." << std::endl;
+                        return 0;
+#else
                         // The first thread initializes the value.
                         // There is an implicit barrier at the end of omp single.
                         // NOTE: This code is executed only once for all OpenMP threads.
@@ -144,6 +188,7 @@ namespace alpaka
                         #pragma omp barrier
 
                         return blockSync.m_result[generationMod2];
+#endif
                     }
                 };
             }

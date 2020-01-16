@@ -24,6 +24,11 @@
 #include <alpaka/core/Unused.hpp>
 #include <alpaka/idx/MapIdx.hpp>
 
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+#include <thread>
+#include <map>
+#endif
+
 namespace alpaka
 {
     namespace idx
@@ -50,6 +55,11 @@ namespace alpaka
                 auto operator=(IdxBtOmp5BuiltIn &&) -> IdxBtOmp5BuiltIn & = delete;
                 //-----------------------------------------------------------------------------
                 /*virtual*/ ~IdxBtOmp5BuiltIn() = default;
+
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                IdxBtOmp5BuiltIn(const std::map<std::thread::id, int>* idMap) : m_idMap(idMap) {}
+                const std::map<std::thread::id, int> * m_idMap = nullptr;
+#endif
             };
         }
     }
@@ -89,15 +99,24 @@ namespace alpaka
                 template<
                     typename TWorkDiv>
                 static auto getIdx(
-                    idx::bt::IdxBtOmp5BuiltIn<TDim, TIdx> const &,
+                    idx::bt::IdxBtOmp5BuiltIn<TDim, TIdx> const &
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+                    idx
+#endif
+                    ,
                     TWorkDiv const & workDiv)
                 -> vec::Vec<TDim, TIdx>
                 {
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
+                    const auto threadNum = ::omp_get_thread_num();
+#else
+                    const auto threadNum = idx.m_idMap->at(std::this_thread::get_id());
+#endif
                     // We assume that the thread id is positive.
-                    ALPAKA_ASSERT(::omp_get_thread_num()>=0);
+                    ALPAKA_ASSERT(threadNum>=0);
                     // \TODO: Would it be faster to precompute the index and cache it inside an array?
                     return idx::mapIdx<TDim::value>(
-                        vec::Vec<dim::DimInt<1u>, TIdx>(static_cast<TIdx>(::omp_get_thread_num())),
+                        vec::Vec<dim::DimInt<1u>, TIdx>(static_cast<TIdx>(threadNum)),
                         workdiv::getWorkDiv<Block, Threads>(workDiv));
                 }
             };
@@ -119,7 +138,12 @@ namespace alpaka
                 -> vec::Vec<dim::DimInt<1u>, TIdx>
                 {
                     alpaka::ignore_unused(idx);
-                    return vec::Vec<dim::DimInt<1u>, TIdx>(static_cast<TIdx>(omp_get_thread_num()));
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
+                    const auto threadNum = ::omp_get_thread_num();
+#else
+                    const auto threadNum = idx.m_idMap->at(std::this_thread::get_id());
+#endif
+                    return vec::Vec<dim::DimInt<1u>, TIdx>(static_cast<TIdx>(threadNum));
                 }
             };
         }

@@ -109,8 +109,13 @@ namespace alpaka
                     math::MathStdLib(),
                     block::shared::dyn::BlockSharedMemDynOmp5(static_cast<std::size_t>(blockSharedMemDynSizeBytes)),
                     //! \TODO can with some TMP determine the amount of statically alloced smem from the kernelFuncObj?
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     block::shared::st::BlockSharedMemStOmp5(staticMemBegin()),
                     block::sync::BlockSyncBarrierOmp(),
+#else
+                    block::shared::st::BlockSharedMemStOmp5(staticMemBegin(), *this),
+                    block::sync::BlockSyncBarrierOmp(blockThreadExtent.prod()),
+#endif
                     rand::RandStdLib(),
                     time::TimeOmp(),
                     m_gridBlockIdx(vec::Vec<TDim, TIdx>::zeros())

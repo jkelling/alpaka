@@ -14,6 +14,11 @@
 #include <alpaka/atomic/Traits.hpp>
 #include <alpaka/atomic/Op.hpp>
 
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+#include <mutex>
+#include <thread>
+#endif
+
 namespace alpaka
 {
     namespace atomic
@@ -28,6 +33,9 @@ namespace alpaka
         public:
             //-----------------------------------------------------------------------------
             AtomicOmpBuiltIn() = default;
+#ifdef SPEC_FAKE_OMP_TARGET_CPU
+            mutable std::mutex m_mutex;
+#endif
             //-----------------------------------------------------------------------------
             ALPAKA_FN_HOST AtomicOmpBuiltIn(AtomicOmpBuiltIn const &) = delete;
             //-----------------------------------------------------------------------------
@@ -60,7 +68,11 @@ namespace alpaka
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto atomicOp(
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     atomic::AtomicOmpBuiltIn const &,
+#else
+                    atomic::AtomicOmpBuiltIn const & at,
+#endif
                     T * const addr,
                     T const & value)
                 -> T
@@ -68,7 +80,11 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     #pragma omp atomic capture
+#else
+                    std::lock_guard<std::mutex> lock(at.m_mutex);
+#endif
                     {
                         old = ref;
                         ref += value;
@@ -90,7 +106,7 @@ namespace alpaka
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto atomicOp(
-                    atomic::AtomicOmpBuiltIn const &,
+                    atomic::AtomicOmpBuiltIn const & at,
                     T * const addr,
                     T const & value)
                 -> T
@@ -98,7 +114,11 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     #pragma omp atomic capture
+#else
+                    std::lock_guard<std::mutex> lock(at.m_mutex);
+#endif
                     {
                         old = ref;
                         ref -= value;
@@ -120,7 +140,7 @@ namespace alpaka
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto atomicOp(
-                    atomic::AtomicOmpBuiltIn const &,
+                    atomic::AtomicOmpBuiltIn const & at,
                     T * const addr,
                     T const & value)
                 -> T
@@ -128,7 +148,11 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     #pragma omp atomic capture
+#else
+                    std::lock_guard<std::mutex> lock(at.m_mutex);
+#endif
                     {
                         old = ref;
                         ref = value;
@@ -150,7 +174,7 @@ namespace alpaka
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto atomicOp(
-                    atomic::AtomicOmpBuiltIn const &,
+                    atomic::AtomicOmpBuiltIn const & at,
                     T * const addr,
                     T const & value)
                 -> T
@@ -158,7 +182,11 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     #pragma omp atomic capture
+#else
+                    std::lock_guard<std::mutex> lock(at.m_mutex);
+#endif
                     {
                         old = ref;
                         ref &= value;
@@ -180,7 +208,7 @@ namespace alpaka
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto atomicOp(
-                    atomic::AtomicOmpBuiltIn const &,
+                    atomic::AtomicOmpBuiltIn const & at,
                     T * const addr,
                     T const & value)
                 -> T
@@ -188,7 +216,11 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     #pragma omp atomic capture
+#else
+                    std::lock_guard<std::mutex> lock(at.m_mutex);
+#endif
                     {
                         old = ref;
                         ref |= value;
@@ -210,7 +242,7 @@ namespace alpaka
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto atomicOp(
-                    atomic::AtomicOmpBuiltIn const &,
+                    atomic::AtomicOmpBuiltIn const & at,
                     T * const addr,
                     T const & value)
                 -> T
@@ -218,7 +250,11 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     #pragma omp atomic capture
+#else
+                    std::lock_guard<std::mutex> lock(at.m_mutex);
+#endif
                     {
                         old = ref;
                         ref ^= value;
@@ -245,14 +281,18 @@ namespace alpaka
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto atomicOp(
-                    atomic::AtomicOmpBuiltIn const &,
+                    atomic::AtomicOmpBuiltIn const & at,
                     T * const addr,
                     T const & value)
                 -> T
                 {
                     T old;
                     // \TODO: Currently not only the access to the same memory location is protected by a mutex but all atomic ops on all threads.
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     #pragma omp critical (AlpakaOmpAtomicOp)
+#else
+                    std::lock_guard<std::mutex> lock(at.m_mutex);
+#endif
                     {
                         old = TOp()(addr, value);
                     }
@@ -260,7 +300,7 @@ namespace alpaka
                 }
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto atomicOp(
-                    atomic::AtomicOmpBuiltIn const &,
+                    atomic::AtomicOmpBuiltIn const & at,
                     T * const addr,
                     T const & compare,
                     T const & value)
@@ -268,7 +308,11 @@ namespace alpaka
                 {
                     T old;
                     // \TODO: Currently not only the access to the same memory location is protected by a mutex but all atomic ops on all threads.
+#ifndef SPEC_FAKE_OMP_TARGET_CPU
                     #pragma omp critical (AlpakaOmpAtomicOp2)
+#else
+                    std::lock_guard<std::mutex> lock(at.m_mutex);
+#endif
                     {
                         old = TOp()(addr, compare, value);
                     }
