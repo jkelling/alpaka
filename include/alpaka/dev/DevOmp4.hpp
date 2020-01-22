@@ -159,6 +159,7 @@ namespace alpaka
             }
             //-----------------------------------------------------------------------------
             ~DevOmp4() = default;
+            int iDevice() const {return m_spDevOmp4Impl->iDevice();}
 
         public:
             std::shared_ptr<omp4::detail::DevOmp4Impl> m_spDevOmp4Impl;
