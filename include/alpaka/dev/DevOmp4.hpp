@@ -86,7 +86,7 @@ namespace alpaka
 
                 public:
                     //-----------------------------------------------------------------------------
-                    DevOmp4Impl() = default;
+                    DevOmp4Impl(int iDevice) : m_iDevice(iDevice) {}
                     //-----------------------------------------------------------------------------
                     DevOmp4Impl(DevOmp4Impl const &) = delete;
                     //-----------------------------------------------------------------------------
@@ -121,7 +121,7 @@ namespace alpaka
                 private:
                     std::mutex mutable m_Mutex;
                     std::vector<std::weak_ptr<queue::IGenericQueue<DevOmp4>>> mutable m_queues;
-                    int m_iDevice = 0;
+                    int m_iDevice;
                 };
             }
         }
@@ -133,8 +133,8 @@ namespace alpaka
 
         protected:
             //-----------------------------------------------------------------------------
-            DevOmp4() :
-                m_spDevOmp4Impl(std::make_shared<omp4::detail::DevOmp4Impl>())
+            DevOmp4(int iDevice) :
+                m_spDevOmp4Impl(std::make_shared<omp4::detail::DevOmp4Impl>(iDevice))
             {}
         public:
             //-----------------------------------------------------------------------------
