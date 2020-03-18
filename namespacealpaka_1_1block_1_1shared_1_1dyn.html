@@ -27,6 +27,7 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="alpaka_doxygen.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">alpaka
    </div>
@@ -103,22 +104,24 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classalpaka_1_1block_1_1shared_1_1dyn_1_1BlockSharedMemDynBoostAlignedAlloc.html">BlockSharedMemDynBoostAlignedAlloc</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The block shared dynamic memory allocator without synchronization.  <a href="classalpaka_1_1block_1_1shared_1_1dyn_1_1BlockSharedMemDynBoostAlignedAlloc.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classalpaka_1_1block_1_1shared_1_1dyn_1_1BlockSharedMemDynCudaBuiltIn.html">BlockSharedMemDynCudaBuiltIn</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The GPU CUDA block shared memory allocator.  <a href="classalpaka_1_1block_1_1shared_1_1dyn_1_1BlockSharedMemDynCudaBuiltIn.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classalpaka_1_1block_1_1shared_1_1dyn_1_1BlockSharedMemDynUniformCudaHipBuiltIn.html">BlockSharedMemDynUniformCudaHipBuiltIn</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The GPU CUDA/HIP block shared memory allocator.  <a href="classalpaka_1_1block_1_1shared_1_1dyn_1_1BlockSharedMemDynUniformCudaHipBuiltIn.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structalpaka_1_1block_1_1shared_1_1dyn_1_1ConceptBlockSharedDyn.html">ConceptBlockSharedDyn</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a390d4ea8f8c2ff639d410ad2d0a8630f"><td class="memTemplParams" colspan="2">template&lt;typename T , typename TBlockSharedMemDyn &gt; </td></tr>
-<tr class="memitem:a390d4ea8f8c2ff639d410ad2d0a8630f"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="Common_8hpp.html#a1bfb3a7f88316271e795e20d2810755a">ALPAKA_FN_ACC</a> auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacealpaka_1_1block_1_1shared_1_1dyn.html#a390d4ea8f8c2ff639d410ad2d0a8630f">getMem</a> (TBlockSharedMemDyn const &amp;blockSharedMemDyn) -&gt; T *</td></tr>
-<tr class="memdesc:a390d4ea8f8c2ff639d410ad2d0a8630f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the pointr to the block shared dynamic memory.  <a href="#a390d4ea8f8c2ff639d410ad2d0a8630f">More...</a><br /></td></tr>
-<tr class="separator:a390d4ea8f8c2ff639d410ad2d0a8630f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b6a6bbd25cc340c245e5b66983ce3c1"><td class="memTemplParams" colspan="2">template&lt;typename T , typename TBlockSharedMemDyn &gt; </td></tr>
+<tr class="memitem:a4b6a6bbd25cc340c245e5b66983ce3c1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="Common_8hpp.html#aa8d02f0c4379afabdb7f4ee2e8f7954c">ALPAKA_NO_HOST_ACC_WARNING</a> <a class="el" href="Common_8hpp.html#a1bfb3a7f88316271e795e20d2810755a">ALPAKA_FN_ACC</a> auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacealpaka_1_1block_1_1shared_1_1dyn.html#a4b6a6bbd25cc340c245e5b66983ce3c1">getMem</a> (TBlockSharedMemDyn const &amp;blockSharedMemDyn) -&gt; T *</td></tr>
+<tr class="memdesc:a4b6a6bbd25cc340c245e5b66983ce3c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the pointr to the block shared dynamic memory.  <a href="#a4b6a6bbd25cc340c245e5b66983ce3c1">More...</a><br /></td></tr>
+<tr class="separator:a4b6a6bbd25cc340c245e5b66983ce3c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The block shared dynamic memory operation specifics. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a390d4ea8f8c2ff639d410ad2d0a8630f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a390d4ea8f8c2ff639d410ad2d0a8630f">&#9670;&nbsp;</a></span>getMem()</h2>
+<a id="a4b6a6bbd25cc340c245e5b66983ce3c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b6a6bbd25cc340c245e5b66983ce3c1">&#9670;&nbsp;</a></span>getMem()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -126,7 +129,7 @@ Functions</h2></td></tr>
 template&lt;typename T , typename TBlockSharedMemDyn &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="Common_8hpp.html#a1bfb3a7f88316271e795e20d2810755a">ALPAKA_FN_ACC</a> auto alpaka::block::shared::dyn::getMem </td>
+          <td class="memname"><a class="el" href="Common_8hpp.html#aa8d02f0c4379afabdb7f4ee2e8f7954c">ALPAKA_NO_HOST_ACC_WARNING</a> <a class="el" href="Common_8hpp.html#a1bfb3a7f88316271e795e20d2810755a">ALPAKA_FN_ACC</a> auto alpaka::block::shared::dyn::getMem </td>
           <td>(</td>
           <td class="paramtype">TBlockSharedMemDyn const &amp;&#160;</td>
           <td class="paramname"><em>blockSharedMemDyn</em></td><td>)</td>
@@ -151,7 +154,7 @@ template&lt;typename T , typename TBlockSharedMemDyn &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block_2shared_2dyn_2Traits_8hpp_source.html#l00072">72</a> of file <a class="el" href="block_2shared_2dyn_2Traits_8hpp_source.html">Traits.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block_2shared_2dyn_2Traits_8hpp_source.html#l00056">56</a> of file <a class="el" href="block_2shared_2dyn_2Traits_8hpp_source.html">Traits.hpp</a>.</p>
 
 </div>
 </div>
@@ -161,7 +164,7 @@ template&lt;typename T , typename TBlockSharedMemDyn &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacealpaka.html">alpaka</a></li><li class="navelem"><a class="el" href="namespacealpaka_1_1block.html">block</a></li><li class="navelem"><a class="el" href="namespacealpaka_1_1block_1_1shared.html">shared</a></li><li class="navelem"><a class="el" href="namespacealpaka_1_1block_1_1shared_1_1dyn.html">dyn</a></li>
-    <li class="footer">Generated on Mon Jan 30 2017 19:39:21 for alpaka by
+    <li class="footer">Generated on Wed Mar 18 2020 16:51:12 for alpaka by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
   </ul>

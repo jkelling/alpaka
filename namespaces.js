@@ -1,5 +1,4 @@
 var namespaces =
 [
-    [ "alpaka", "namespacealpaka.html", "namespacealpaka" ],
-    [ "boost", "namespaceboost.html", "namespaceboost" ]
+    [ "alpaka", "namespacealpaka.html", "namespacealpaka" ]
 ];

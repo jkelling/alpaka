@@ -1,6 +1,5 @@
 var classalpaka_1_1block_1_1sync_1_1BlockSyncNoOp =
 [
-    [ "BlockSyncBase", "classalpaka_1_1block_1_1sync_1_1BlockSyncNoOp.html#a364728c7083eaebb7f46de6cefa36700", null ],
     [ "BlockSyncNoOp", "classalpaka_1_1block_1_1sync_1_1BlockSyncNoOp.html#a76e231778be72ce9d0881087e9cd4fea", null ],
     [ "BlockSyncNoOp", "classalpaka_1_1block_1_1sync_1_1BlockSyncNoOp.html#a80d5444ce7ef6e7467d4a125a82f2469", null ],
     [ "BlockSyncNoOp", "classalpaka_1_1block_1_1sync_1_1BlockSyncNoOp.html#a8544cbf379d1f48b99ca6620917088e0", null ],

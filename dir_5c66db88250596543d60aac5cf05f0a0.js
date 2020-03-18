@@ -1,12 +1,13 @@
 var dir_5c66db88250596543d60aac5cf05f0a0 =
 [
-    [ "SinCudaBuiltIn.hpp", "SinCudaBuiltIn_8hpp.html", [
-      [ "SinCudaBuiltIn", "classalpaka_1_1math_1_1SinCudaBuiltIn.html", "classalpaka_1_1math_1_1SinCudaBuiltIn" ],
-      [ "Sin< SinCudaBuiltIn, TArg, typename std::enable_if< std::is_floating_point< TArg >::value >::type >", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinCudaBuiltIn_00_01TArg_00_01typename_01std_1_1enabled48acf58e92013ba11d17723aaeb0155.html", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinCudaBuiltIn_00_01TArg_00_01typename_01std_1_1enabled48acf58e92013ba11d17723aaeb0155" ]
+    [ "SinStdLib.hpp", "SinStdLib_8hpp.html", [
+      [ "SinStdLib", "classalpaka_1_1math_1_1SinStdLib.html", null ],
+      [ "Sin< SinStdLib, TArg, std::enable_if_t< std::is_arithmetic< TArg >::value > >", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinStdLib_00_01TArg_00_01std_1_1enable__if__t_3_01std_db7a0f7c20ba5c69434ca84f7abb06b9.html", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinStdLib_00_01TArg_00_01std_1_1enable__if__t_3_01std_db7a0f7c20ba5c69434ca84f7abb06b9" ]
     ] ],
-    [ "SinStl.hpp", "SinStl_8hpp.html", [
-      [ "SinStl", "classalpaka_1_1math_1_1SinStl.html", "classalpaka_1_1math_1_1SinStl" ],
-      [ "Sin< SinStl, TArg, typename std::enable_if< std::is_arithmetic< TArg >::value >::type >", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinStl_00_01TArg_00_01typename_01std_1_1enable__if_3_0f2e9fd8321d89b4298ded69cb920d6a2.html", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinStl_00_01TArg_00_01typename_01std_1_1enable__if_3_0f2e9fd8321d89b4298ded69cb920d6a2" ]
+    [ "SinUniformCudaHipBuiltIn.hpp", "SinUniformCudaHipBuiltIn_8hpp.html", [
+      [ "SinUniformCudaHipBuiltIn", "classalpaka_1_1math_1_1SinUniformCudaHipBuiltIn.html", null ],
+      [ "Sin< SinUniformCudaHipBuiltIn, float >", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinUniformCudaHipBuiltIn_00_01float_01_4.html", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinUniformCudaHipBuiltIn_00_01float_01_4" ],
+      [ "Sin< SinUniformCudaHipBuiltIn, TArg, std::enable_if_t< std::is_floating_point< TArg >::value > >", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinUniformCudaHipBuiltIn_00_01TArg_00_01std_1_1enable_2751d3e2dc56803b055ffb90798e21e0.html", "structalpaka_1_1math_1_1traits_1_1Sin_3_01SinUniformCudaHipBuiltIn_00_01TArg_00_01std_1_1enable_2751d3e2dc56803b055ffb90798e21e0" ]
     ] ],
     [ "Traits.hpp", "math_2sin_2Traits_8hpp.html", "math_2sin_2Traits_8hpp" ]
 ];

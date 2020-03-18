@@ -27,6 +27,7 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="alpaka_doxygen.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">alpaka
    </div>
@@ -110,12 +111,44 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a42d5ffb31558d590b656b262a269a8d6"><td class="memTemplParams" colspan="2">template&lt;typename TLhs , typename TRhs &gt; </td></tr>
+<tr class="memitem:a42d5ffb31558d590b656b262a269a8d6"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="Common_8hpp.html#aa8d02f0c4379afabdb7f4ee2e8f7954c">ALPAKA_NO_HOST_ACC_WARNING</a> <a class="el" href="Common_8hpp.html#a4a195bd41eac945cee512865b6ef73f3">ALPAKA_FN_HOST_ACC</a> auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacealpaka_1_1core.html#a42d5ffb31558d590b656b262a269a8d6">assertGreaterThan</a> (TRhs const &amp;lhs) -&gt; void</td></tr>
+<tr class="memdesc:a42d5ffb31558d590b656b262a269a8d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method asserts that the integral value TArg is less than Tidx.  <a href="#a42d5ffb31558d590b656b262a269a8d6">More...</a><br /></td></tr>
+<tr class="separator:a42d5ffb31558d590b656b262a269a8d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a841600e3344adc10ea85eac5834e35a2"><td class="memTemplParams" colspan="2">template&lt;typename TArg &gt; </td></tr>
 <tr class="memitem:a841600e3344adc10ea85eac5834e35a2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="Common_8hpp.html#aa8d02f0c4379afabdb7f4ee2e8f7954c">ALPAKA_NO_HOST_ACC_WARNING</a> <a class="el" href="Common_8hpp.html#a4a195bd41eac945cee512865b6ef73f3">ALPAKA_FN_HOST_ACC</a> auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacealpaka_1_1core.html#a841600e3344adc10ea85eac5834e35a2">assertValueUnsigned</a> (TArg const &amp;arg) -&gt; void</td></tr>
 <tr class="memdesc:a841600e3344adc10ea85eac5834e35a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method checks integral values if they are greater or equal zero. The implementation prevents warnings for checking this for unsigned types.  <a href="#a841600e3344adc10ea85eac5834e35a2">More...</a><br /></td></tr>
 <tr class="separator:a841600e3344adc10ea85eac5834e35a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba50ad750855be306239699abe49ba28"><td class="memTemplParams" colspan="2">template&lt;typename T , typename V &gt; </td></tr>
+<tr class="memitem:aba50ad750855be306239699abe49ba28"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacealpaka_1_1core.html#aba50ad750855be306239699abe49ba28">clipCast</a> (V const &amp;val) -&gt; T</td></tr>
+<tr class="separator:aba50ad750855be306239699abe49ba28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a42d5ffb31558d590b656b262a269a8d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42d5ffb31558d590b656b262a269a8d6">&#9670;&nbsp;</a></span>assertGreaterThan()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TLhs , typename TRhs &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="Common_8hpp.html#aa8d02f0c4379afabdb7f4ee2e8f7954c">ALPAKA_NO_HOST_ACC_WARNING</a> <a class="el" href="Common_8hpp.html#a4a195bd41eac945cee512865b6ef73f3">ALPAKA_FN_HOST_ACC</a> auto alpaka::core::assertGreaterThan </td>
+          <td>(</td>
+          <td class="paramtype">TRhs const &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em></td><td>)</td>
+          <td> -&gt; void
+        </td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This method asserts that the integral value TArg is less than Tidx. </p>
+
+<p class="definition">Definition at line <a class="el" href="Assert_8hpp_source.html#l00139">139</a> of file <a class="el" href="Assert_8hpp_source.html">Assert.hpp</a>.</p>
+
+</div>
+</div>
 <a id="a841600e3344adc10ea85eac5834e35a2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a841600e3344adc10ea85eac5834e35a2">&#9670;&nbsp;</a></span>assertValueUnsigned()</h2>
 
@@ -137,7 +170,31 @@ template&lt;typename TArg &gt; </div>
 
 <p>This method checks integral values if they are greater or equal zero. The implementation prevents warnings for checking this for unsigned types. </p>
 
-<p class="definition">Definition at line <a class="el" href="Assert_8hpp_source.html#l00109">109</a> of file <a class="el" href="Assert_8hpp_source.html">Assert.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Assert_8hpp_source.html#l00075">75</a> of file <a class="el" href="Assert_8hpp_source.html">Assert.hpp</a>.</p>
+
+</div>
+</div>
+<a id="aba50ad750855be306239699abe49ba28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba50ad750855be306239699abe49ba28">&#9670;&nbsp;</a></span>clipCast()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename V &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto alpaka::core::clipCast </td>
+          <td>(</td>
+          <td class="paramtype">V const &amp;&#160;</td>
+          <td class="paramname"><em>val</em></td><td>)</td>
+          <td> -&gt; T
+        </td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>The input casted and clipped to T. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="ClipCast_8hpp_source.html#l00026">26</a> of file <a class="el" href="ClipCast_8hpp_source.html">ClipCast.hpp</a>.</p>
 
 </div>
 </div>
@@ -147,7 +204,7 @@ template&lt;typename TArg &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacealpaka.html">alpaka</a></li><li class="navelem"><a class="el" href="namespacealpaka_1_1core.html">core</a></li>
-    <li class="footer">Generated on Mon Jan 30 2017 19:39:24 for alpaka by
+    <li class="footer">Generated on Wed Mar 18 2020 16:51:12 for alpaka by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
   </ul>

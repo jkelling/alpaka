@@ -5,8 +5,9 @@ var NAVTREE =
     [ "Namespaces", null, [
       [ "Namespace List", "namespaces.html", "namespaces" ],
       [ "Namespace Members", "namespacemembers.html", [
-        [ "All", "namespacemembers.html", null ],
+        [ "All", "namespacemembers.html", "namespacemembers_dup" ],
         [ "Functions", "namespacemembers_func.html", null ],
+        [ "Variables", "namespacemembers_vars.html", null ],
         [ "Typedefs", "namespacemembers_type.html", null ],
         [ "Enumerations", "namespacemembers_enum.html", null ]
       ] ]
@@ -19,6 +20,8 @@ var NAVTREE =
         [ "Functions", "functions_func.html", "functions_func" ],
         [ "Variables", "functions_vars.html", null ],
         [ "Typedefs", "functions_type.html", "functions_type" ],
+        [ "Enumerations", "functions_enum.html", null ],
+        [ "Enumerator", "functions_eval.html", null ],
         [ "Related Functions", "functions_rela.html", null ]
       ] ]
     ] ],
@@ -26,6 +29,8 @@ var NAVTREE =
       [ "File List", "files.html", "files" ],
       [ "File Members", "globals.html", [
         [ "All", "globals.html", null ],
+        [ "Functions", "globals_func.html", null ],
+        [ "Typedefs", "globals_type.html", null ],
         [ "Macros", "globals_defs.html", null ]
       ] ]
     ] ]
@@ -34,19 +39,20 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"AbsCudaBuiltIn_8hpp.html",
-"MathCudaBuiltIn_8hpp_source.html",
-"classalpaka_1_1block_1_1shared_1_1dyn_1_1BlockSharedMemDynBoostAlignedAlloc.html#acc7e58d7f01a5a25315036b19b7393c4",
-"classalpaka_1_1exec_1_1ExecCpuSerial.html#aeb8ab62230a9c10756fff9969a20bbe1",
-"classalpaka_1_1rand_1_1distribution_1_1cuda_1_1UniformUint_3_01unsigned_01int_01_4.html#a55deb82560b83be40ff8608dc3681cf6",
-"extent_2Traits_8hpp.html#a61837968639dbbe2c1f125d3162098b9",
-"namespacealpaka_1_1dim.html",
-"structalpaka_1_1acc_1_1traits_1_1GetAccName_3_01acc_1_1AccCpuOmp4_3_01TDim_00_01TSize_01_4_01_4.html",
-"structalpaka_1_1dev_1_1traits_1_1GetFreeMemBytes.html",
-"structalpaka_1_1math_1_1traits_1_1Asin_3_01T_00_01TArg_00_01typename_01std_1_1enable__if_3_01metc42a87522fe84ccddb60135363c30368.html#a8f5694bf287159e72feba2c6b5af5a6a",
-"structalpaka_1_1mem_1_1view_1_1cpu_1_1detail_1_1TaskSetBase.html#a2be7706bc2c19202dcc753f888f38db5",
-"structalpaka_1_1offset_1_1traits_1_1GetOffset_1_1type_01_4.html#a819ebe43bcf30570ddc02a5a8cb10f59",
-"structalpaka_1_1vec_1_1traits_1_1Reverse_3_01Vec_3_01dim_1_1DimInt_3_011u_01_4_00_01TSize_01_4_01_4.html"
+"AbsStdLib_8hpp.html",
+"IdxBtRefThreadIdMap_8hpp_source.html",
+"classalpaka_1_1acc_1_1AccCpuOmp2Blocks.html#a27c04ccb661d4b55da19b2b227757777",
+"classalpaka_1_1dev_1_1cpu_1_1detail_1_1DevCpuImpl.html#a10ed100f6d4beb67e70acc31ad5d5754",
+"classalpaka_1_1mem_1_1view_1_1ViewSubView.html",
+"dir_4a38c3cb3ba3d4f90a31fd81ecb7e5f9.html",
+"mem_2view_2Traits_8hpp.html#a8edaea6418672a443fd579021f573d98",
+"offset_2Traits_8hpp.html#a174bbb40f6145a85e164a4e1f7b8d723",
+"structalpaka_1_1block_1_1shared_1_1dyn_1_1traits_1_1GetMem.html",
+"structalpaka_1_1dim_1_1traits_1_1DimType_3_01idx_1_1bt_1_1IdxBtRefFiberIdMap_3_01TDim_00_01TIdx_01_4_01_4.html#a49409d66cb8c947902974c86085bbdaa",
+"structalpaka_1_1math_1_1ConceptMathSqrt.html",
+"structalpaka_1_1mem_1_1view_1_1cpu_1_1detail_1_1TaskCopyCpu.html",
+"structalpaka_1_1meta_1_1detail_1_1IsSetImpl_3_01TList_3_01Ts_8_8_8_01_4_01_4.html#ac9ad34e2ffbc4acff836b04faa0f46cf",
+"structalpaka_1_1vec_1_1detail_1_1CreateLessEqual.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
