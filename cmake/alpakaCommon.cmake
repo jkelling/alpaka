@@ -19,6 +19,7 @@ set(ALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLE_DEFAULT ON)
 set(ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE_DEFAULT ON)
 set(ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE_DEFAULT ON)
 set(ALPAKA_ACC_ANY_BT_OMP5_ENABLE_DEFAULT ON)
+set(ALPAKA_ACC_ANY_BT_OACC_ENABLE_DEFAULT OFF)
 
 # HIP and platform selection and warning about unsupported features
 option(ALPAKA_ACC_GPU_HIP_ENABLE "Enable the HIP back-end (all other back-ends must be disabled)" OFF)
@@ -86,6 +87,7 @@ option(ALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLE "Enable the TBB CPU grid block back-end
 option(ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE "Enable the OpenMP 2.0 CPU grid block back-end" ${ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE_DEFAULT})
 option(ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE "Enable the OpenMP 2.0 CPU block thread back-end" ${ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE_DEFAULT})
 option(ALPAKA_ACC_ANY_BT_OMP5_ENABLE "Enable the OpenMP 5.0 CPU block and block thread back-end" ${ALPAKA_ACC_ANY_BT_OMP5_ENABLE_DEFAULT})
+option(ALPAKA_ACC_ANY_BT_OACC_ENABLE "Enable the OpenACC block and block thread back-end" ${ALPAKA_ACC_ANY_BT_OACC_ENABLE_DEFAULT})
 
 if((ALPAKA_ACC_GPU_CUDA_ONLY_MODE OR ALPAKA_ACC_GPU_HIP_ONLY_MODE)
    AND
@@ -103,6 +105,12 @@ if((ALPAKA_ACC_GPU_CUDA_ONLY_MODE OR ALPAKA_ACC_GPU_HIP_ONLY_MODE)
         message(WARNING "If ALPAKA_ACC_GPU_HIP_ONLY_MODE is enabled, only back-ends using HIP can be enabled!")
     endif()
     set(_ALPAKA_FOUND FALSE)
+ elseif(ALPAKA_ACC_ANY_BT_OACC_ENABLE)
+    if((ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE OR
+       ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE OR
+       ALPAKA_ACC_CPU_BT_OMP4_ENABLE))
+       message(WARNING "If ALPAKA_ACC_ANY_BT_OACC_ENABLE is enabled no OpenMP backend can be enabled.")
+    endif()
 endif()
 
 # avoids CUDA+HIP conflict
@@ -284,6 +292,14 @@ if(ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE OR ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE OR A
         set(ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE OFF CACHE BOOL "Enable the OpenMP 2.0 CPU block thread back-end" FORCE)
         set(ALPAKA_ACC_ANY_BT_OMP5_ENABLE OFF CACHE BOOL "Enable the OpenMP 5.0 CPU block and thread back-end" FORCE)
     endif()
+endif()
+
+if(ALPAKA_ACC_ANY_BT_OACC_ENABLE)
+   find_package(OpenACC)
+   if(OpenACC_CXX_FOUND)
+      target_compile_options(alpaka INTERFACE ${OpenACC_CXX_OPTIONS})
+      target_link_options(alpaka INTERFACE ${OpenACC_CXX_OPTIONS})
+   endif()
 endif()
 
 #-------------------------------------------------------------------------------
@@ -770,6 +786,10 @@ endif()
 if(ALPAKA_ACC_ANY_BT_OMP5_ENABLE)
     target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_ANY_BT_OMP5_ENABLED")
     message(STATUS ALPAKA_ACC_ANY_BT_OMP5_ENABLED)
+endif()
+if(ALPAKA_ACC_ANY_BT_OACC_ENABLE)
+    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_ANY_BT_OACC_ENABLED")
+    message(STATUS ALPAKA_ACC_ANY_BT_OACC_ENABLE)
 endif()
 if(ALPAKA_ACC_GPU_CUDA_ENABLE)
     target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_GPU_CUDA_ENABLED")
