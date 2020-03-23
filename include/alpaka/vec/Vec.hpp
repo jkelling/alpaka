@@ -121,7 +121,7 @@ namespace alpaka
             static_assert(TDim::value >= 0u, "Invalid dimensionality");
 
             using Dim = TDim;
-            static constexpr auto s_uiDim = TDim::value;
+            // static constexpr auto s_uiDim = TDim::value;
             using Val = TVal;
 
         private:
