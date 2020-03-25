@@ -123,7 +123,8 @@ namespace alpaka
                         BufOaccImpl& operator=(BufOaccImpl&&) = default;
                             ~BufOaccImpl()
                         {
-                            omp_target_free(m_pMem, m_dev.m_spDevOaccImpl->iDevice());
+                            m_dev.makeCurrent();
+                            acc_free(m_pMem);
                         }
                     };
                 }

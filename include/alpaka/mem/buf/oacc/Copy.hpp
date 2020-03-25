@@ -22,6 +22,8 @@
 #include <alpaka/dim/DimIntegralConst.hpp>
 #include <alpaka/extent/Traits.hpp>
 #include <alpaka/mem/view/Traits.hpp>
+#include <alpaka/meta/NdLoop.hpp>
+#include <alpaka/meta/Integral.hpp>
 
 #include <alpaka/vec/Vec.hpp>
 #include <alpaka/core/Assert.hpp>
@@ -36,81 +38,26 @@ namespace alpaka
     {
         namespace view
         {
-            namespace omp4
+            namespace oacc
             {
                 namespace detail
                 {
-                    template<
-                        typename TDim,
-                        typename TVal,
-                        typename TView,
-                        template<std::size_t> class Fn,
-                        std::size_t DIM = TDim::value
-                        >
-                    struct VecFromDimTrait
-                    {
-                        static_assert(DIM > 0, "DIM !> 0");
-                        template<typename... TArgs>
-                        static auto vecFromDimTrait(TView const &view, TArgs... args)
-                            -> vec::Vec<TDim, TVal>
-                        {
-                            return VecFromDimTrait<TDim, TVal, TView, Fn, DIM-1>
-                                ::vecFromDimTrait(view,
-                                        static_cast<TVal>(Fn<DIM-1>::get(view)),
-                                        std::forward<TArgs>(args)...);
-                        }
-                    };
-
-                    template<
-                        typename TDim,
-                        typename TVal,
-                        typename TView,
-                        template<std::size_t> class Fn
-                        >
-                    struct VecFromDimTrait<
-                        TDim,
-                        TVal,
-                        TView,
-                        Fn,
-                        0u
-                        >
-                    {
-                        template<typename... TArgs>
-                        static auto vecFromDimTrait(TView const &, TArgs... args)
-                            -> vec::Vec<TDim, TVal>
-                        {
-                            return vec::Vec<TDim, TVal>(std::forward<TArgs>(args)...);
-                        }
-                    };
-
-                    template<std::size_t TIdx>
-                    struct MyGetExtent
-                    {
-                        template<typename TExtent>
-                        static inline size_t get (TExtent const & extent)
-                        {
-                            return static_cast<size_t>(extent::getExtent<TIdx>(extent));
-                        }
-                    };
-                    template<std::size_t TIdx>
-                    struct MyGetPitch
-                    {
-                        template<typename TPitch>
-                        static inline size_t get (TPitch const & pitch)
-                        {
-                            return static_cast<size_t>(view::getPitchBytes<TIdx>(pitch));
-                        }
-                    };
-
                     //#############################################################################
-                    //! The Oacc memory copy trait.
+                    //! The OpenAcc device memory copy task base.
+                    //!
                     template<
                         typename TDim,
                         typename TViewDst,
                         typename TViewSrc,
-                        typename TExtent>
-                    struct TaskCopyOacc
+                        typename TExtent,
+                        typename TCopyPred>
+                    struct TaskCopyOaccBase
                     {
+                        using ExtentSize = idx::Idx<TExtent>;
+                        using DstSize = idx::Idx<TViewDst>;
+                        using SrcSize = idx::Idx<TViewSrc>;
+                        using Elem = elem::Elem<TViewSrc>;
+
                         static_assert(
                             !std::is_const<TViewDst>::value,
                             "The destination view can not be const!");
@@ -132,46 +79,29 @@ namespace alpaka
                         using Idx = idx::Idx<TExtent>;
 
                         //-----------------------------------------------------------------------------
-                        ALPAKA_FN_HOST TaskCopyOacc(
+                        ALPAKA_FN_HOST TaskCopyOaccBase(
                             TViewDst & viewDst,
                             TViewSrc const & viewSrc,
                             TExtent const & extent,
-                            int const & iDstDevice,
-                            int const & iSrcDevice) :
-                                m_iDstDevice(iDstDevice),
-                                m_iSrcDevice(iSrcDevice),
-                                m_extent(VecFromDimTrait<
-                                        TDim, size_t, TExtent,
-                                        MyGetExtent>::vecFromDimTrait(extent)),
-                                m_dstPitchBytes(VecFromDimTrait<
-                                        TDim, size_t, TViewDst,
-                                        MyGetPitch>::vecFromDimTrait(viewDst)),
-                                m_srcPitchBytes(VecFromDimTrait<
-                                        TDim, size_t, TViewSrc,
-                                        MyGetPitch>::vecFromDimTrait(viewSrc)),
-#if 0
-                                m_extent(alpaka::extent::getExtentVec(extent)),
-                                m_dstExtent(alpaka::extent::getExtentVec(viewDst)),
-                                m_srcExtent(alpaka::extent::getExtentVec(viewSrc)),
+                            dev::DevOacc const & dev,
+                            TCopyPred copyPred) :
+                                m_dev(dev),
+                                m_extent(extent::getExtentVec(extent)),
+                                m_extentWidthBytes(m_extent[TDim::value - 1u] * static_cast<ExtentSize>(sizeof(Elem))),
+                                m_dstPitchBytes(mem::view::getPitchBytesVec(viewDst)),
+                                m_srcPitchBytes(mem::view::getPitchBytesVec(viewSrc)),
+#if (!defined(NDEBUG)) || (ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
+                                m_dstExtent(extent::getExtentVec(viewDst)),
+                                m_srcExtent(extent::getExtentVec(viewSrc)),
 #endif
-                                m_dstMemNative(reinterpret_cast<void *>(mem::view::getPtrNative(viewDst))),
-                                m_srcMemNative(reinterpret_cast<void const *>(mem::view::getPtrNative(viewSrc)))
+                                m_dstMemNative(reinterpret_cast<std::uint8_t *>(mem::view::getPtrNative(viewDst))),
+                                m_srcMemNative(reinterpret_cast<std::uint8_t const *>(mem::view::getPtrNative(viewSrc))),
+                                m_copyPred(copyPred)
                         {
-#if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
-                            const auto dstExtent(VecFromDimTrait<
-                                    TDim, size_t, TViewDst,
-                                    MyGetExtent>::vecFromDimTrait(viewDst));
-                            const auto srcExtent(VecFromDimTrait<
-                                    TDim, size_t, TViewSrc,
-                                    MyGetExtent>::vecFromDimTrait(viewSrc));
-                            for(auto i = static_cast<decltype(TDim::value)>(0u); i < TDim::value; ++i)
-                            {
-                                ALPAKA_ASSERT(m_extent[i] <= dstExtent[i]);
-                                ALPAKA_ASSERT(m_extent[i] <= srcExtent[i]);
-                            }
-                            std::cout << "TaskCopyOacc<" << TDim::value << ",...>::ctor\tdstExtent="
-                            << alpaka::extent::getExtentVec(viewDst) << ", m_dstExtent=" << dstExtent << std::endl;
-#endif
+                            ALPAKA_ASSERT((vec::cast<DstSize>(m_extent) <= m_dstExtent).foldrAll(std::logical_or<bool>()));
+                            ALPAKA_ASSERT((vec::cast<SrcSize>(m_extent) <= m_srcExtent).foldrAll(std::logical_or<bool>()));
+                            ALPAKA_ASSERT(static_cast<DstSize>(m_extentWidthBytes) <= m_dstPitchBytes[TDim::value - 1u]);
+                            ALPAKA_ASSERT(static_cast<SrcSize>(m_extentWidthBytes) <= m_srcPitchBytes[TDim::value - 1u]);
                         }
 
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
@@ -180,180 +110,116 @@ namespace alpaka
                         -> void
                         {
                             std::cout << __func__
-                                << " ddev: " << m_iDstDevice
+                                << " dev: " << m_iDevice
                                 << " ew: " << m_extent
                                 // << " dw: " << m_dstExtent
                                 << " dptr: " << m_dstMemNative
-                                << " sdev: " << m_iSrcDevice
                                 // << " sw: " << m_srcExtent
                                 << " sptr: " << m_srcMemNative
                                 << std::endl;
                         }
 #endif
-                        int m_iDstDevice;
-                        int m_iSrcDevice;
+                        const dev::DevOacc m_dev;
                         vec::Vec<TDim, size_t> m_extent;
-                        // vec::Vec<TDim, size_t> m_dstExtent;
-                        // vec::Vec<TDim, size_t> m_srcExtent;
+                        ExtentSize const m_extentWidthBytes;
+#if (!defined(NDEBUG)) || (ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
+                        vec::Vec<TDim, DstSize> const m_dstExtent;
+                        vec::Vec<TDim, SrcSize> const m_srcExtent;
+#endif
                         vec::Vec<TDim, size_t> m_dstPitchBytes;
                         vec::Vec<TDim, size_t> m_srcPitchBytes;
-                        void * m_dstMemNative;
-                        void const * m_srcMemNative;
+                        std::uint8_t * const m_dstMemNative;
+                        std::uint8_t const * const m_srcMemNative;
+                        TCopyPred m_copyPred;
+
+                    };
+
+                    //#############################################################################
+                    //! The OpenAcc Nd device memory copy task.
+                    //!
+                    template<
+                        typename TDim,
+                        typename TViewDst,
+                        typename TViewSrc,
+                        typename TExtent,
+                        typename TCopyPred>
+                    struct TaskCopyOacc : public TaskCopyOaccBase<TDim, TViewDst, TViewSrc, TExtent, TCopyPred>
+                    {
+                        using DimMin1 = dim::DimInt<TDim::value - 1u>;
+                        using typename TaskCopyOaccBase<TDim, TViewDst, TViewSrc, TExtent, TCopyPred>::ExtentSize;
+                        using typename TaskCopyOaccBase<TDim, TViewDst, TViewSrc, TExtent, TCopyPred>::DstSize;
+                        using typename TaskCopyOaccBase<TDim, TViewDst, TViewSrc, TExtent, TCopyPred>::SrcSize;
 
                         //-----------------------------------------------------------------------------
-                        //! Executes the kernel function object.
+                        using TaskCopyOaccBase<TDim, TViewDst, TViewSrc, TExtent, TCopyPred>::TaskCopyOaccBase;
+
+                        //-----------------------------------------------------------------------------
                         ALPAKA_FN_HOST auto operator()() const
                         -> void
                         {
                             ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
-                            printDebug();
+                            this->printDebug();
 #endif
-                            constexpr auto lastDim = TDim::value - 1;
+                            vec::Vec<DimMin1, ExtentSize> const extentWithoutInnermost(vec::subVecBegin<DimMin1>(this->m_extent));
+                            // [z, y, x] -> [y, x] because the z pitch (the full size of the buffer) is not required.
+                            vec::Vec<DimMin1, DstSize> const dstPitchBytesWithoutOutmost(vec::subVecEnd<DimMin1>(this->m_dstPitchBytes));
+                            vec::Vec<DimMin1, SrcSize> const srcPitchBytesWithoutOutmost(vec::subVecEnd<DimMin1>(this->m_srcPitchBytes));
 
-                            if(m_extent.prod() > 0)
+                            if(static_cast<std::size_t>(this->m_extent.prod()) != 0u)
                             {
-                                // offsets == 0 by ptr shift (?)
-                                auto dstOffset(vec::Vec<TDim, size_t>::zeros());
-                                auto srcOffset(vec::Vec<TDim, size_t>::zeros());
-
-                                auto dstExtentFull(vec::Vec<TDim, size_t>::zeros());
-                                auto srcExtentFull(vec::Vec<TDim, size_t>::zeros());
-
-                                const size_t elementSize =
-                                    ( m_dstPitchBytes[0]%sizeof(elem::Elem<TViewDst>) || m_srcPitchBytes[0]%sizeof(elem::Elem<TViewDst>) )
-                                    ? 1 : sizeof(elem::Elem<TViewDst>);
-
-                                dstExtentFull[lastDim] = m_dstPitchBytes[lastDim]/elementSize;
-                                srcExtentFull[lastDim] = m_srcPitchBytes[lastDim]/elementSize;
-                                for(int i = lastDim - 1; i >= 0; --i)
-                                {
-                                    dstExtentFull[i] = m_dstPitchBytes[i]/m_dstPitchBytes[i+1];
-                                    srcExtentFull[i] = m_srcPitchBytes[i]/m_srcPitchBytes[i+1];
-                                }
-
-                                // std::cout << "copy " << TDim::value << "d\textent=" << m_extent
-                                //     << "\tdstExtentFull=" << dstExtentFull << " (p " << m_dstPitchBytes
-                                //     << " )\tsrcExtentFull=" << srcExtentFull << " (p " << m_srcPitchBytes
-                                //     << " )\telementSize=" << elementSize << std::endl;
-
-                                    // omp_target_memcpy_rect(
-                                    //     m_dstMemNative, const_cast<void*>(m_srcMemNative),
-                                    //     sizeof(elem::Elem<TViewDst>),
-                                    //     TDim::value,
-                                    //     reinterpret_cast<size_t const *>(&m_extent),
-                                    //     reinterpret_cast<size_t const *>(&dstOffset),
-                                    //     reinterpret_cast<size_t const *>(&srcOffset),
-                                    //     reinterpret_cast<size_t const *>(&dstExtentFull),
-                                    //     reinterpret_cast<size_t const *>(&srcExtentFull),
-                                    //     m_iDstDevice, m_iSrcDevice));
+                                this->m_dev.makeCurrent();
+                                meta::ndLoopIncIdx(
+                                    extentWithoutInnermost,
+                                    [&](vec::Vec<DimMin1, ExtentSize> const & idx)
+                                    {
+                                        this->m_copyPred(
+                                            reinterpret_cast<void *>(
+                                                this->m_dstMemNative + (vec::cast<DstSize>(idx) * dstPitchBytesWithoutOutmost).foldrAll(std::plus<DstSize>())),
+                                            reinterpret_cast<void *>(
+                                                this->m_srcMemNative + (vec::cast<SrcSize>(idx) * srcPitchBytesWithoutOutmost).foldrAll(std::plus<SrcSize>())),
+                                            static_cast<std::size_t>(this->m_extentWidthBytes));
+                                    });
                             }
                         }
                     };
 
                     //#############################################################################
-                    //! The Oacc memory copy trait.
+                    //! The 1d Oacc memory copy task.
                     template<
                         typename TViewDst,
                         typename TViewSrc,
-                        typename TExtent>
+                        typename TExtent,
+                        typename TCopyPred>
                     struct TaskCopyOacc<
                         dim::DimInt<1>,
                         TViewDst,
                         TViewSrc,
-                        TExtent>
+                        TExtent,
+                        TCopyPred>
+                            : public TaskCopyOaccBase<dim::DimInt<1>, TViewDst, TViewSrc, TExtent, TCopyPred>
                     {
-                        static_assert(
-                            !std::is_const<TViewDst>::value,
-                            "The destination view can not be const!");
-
-                        static_assert(
-                            dim::Dim<TViewSrc>::value == 1,
-                            "The source view is required to have dimensionality 1!");
-                        static_assert(
-                            dim::Dim<TViewDst>::value == 1,
-                            "The source view is required to have dimensionality 1!");
-                        static_assert(
-                            dim::Dim<TExtent>::value == 1,
-                            "The extent is required to have dimensionality 1!");
-                        // TODO: Maybe check for Idx of TViewDst and TViewSrc to have greater or equal range than TExtent.
-                        static_assert(
-                            std::is_same<elem::Elem<TViewDst>, typename std::remove_const<elem::Elem<TViewSrc>>::type>::value,
-                            "The source and the destination view are required to have the same element type!");
-
-                        using Idx = idx::Idx<TExtent>;
+                        //-----------------------------------------------------------------------------
+                        using TaskCopyOaccBase<dim::DimInt<1u>, TViewDst, TViewSrc, TExtent, TCopyPred>::TaskCopyOaccBase;
 
                         //-----------------------------------------------------------------------------
-                        ALPAKA_FN_HOST TaskCopyOacc(
-                            TViewDst & viewDst,
-                            TViewSrc const & viewSrc,
-                            TExtent const & extent,
-                            int const & iDstDevice,
-                            int const & iSrcDevice) :
-                                m_iDstDevice(iDstDevice),
-                                m_iSrcDevice(iSrcDevice),
-#if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
-                                m_extentWidth(extent::getWidth(extent)),
-                                m_dstWidth(static_cast<Idx>(extent::getWidth(viewDst))),
-                                m_srcWidth(static_cast<Idx>(extent::getWidth(viewSrc))),
-#endif
-                                m_extentWidthBytes(extent::getWidth(extent) * static_cast<Idx>(sizeof(elem::Elem<TViewDst>))),
-                                m_dstMemNative(reinterpret_cast<void *>(mem::view::getPtrNative(viewDst))),
-                                m_srcMemNative(reinterpret_cast<void const *>(mem::view::getPtrNative(viewSrc)))
-                        {
-#if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
-                            ALPAKA_ASSERT(m_extentWidth <= m_dstWidth);
-                            ALPAKA_ASSERT(m_extentWidth <= m_srcWidth);
-#endif
-                        }
-
-#if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
-                        //-----------------------------------------------------------------------------
-                        ALPAKA_FN_HOST auto printDebug() const
-                        -> void
-                        {
-                            std::cout << __func__
-                                << " ddev: " << m_iDstDevice
-                                << " ew: " << m_extentWidth
-                                << " ewb: " << m_extentWidthBytes
-                                << " dw: " << m_dstWidth
-                                << " dptr: " << m_dstMemNative
-                                << " sdev: " << m_iSrcDevice
-                                << " sw: " << m_srcWidth
-                                << " sptr: " << m_srcMemNative
-                                << std::endl;
-                        }
-#endif
-                        int m_iDstDevice;
-                        int m_iSrcDevice;
-#if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
-                        Idx m_extentWidth;
-                        Idx m_dstWidth;
-                        Idx m_srcWidth;
-#endif
-                        Idx m_extentWidthBytes;
-                        void * m_dstMemNative;
-                        void const * m_srcMemNative;
-
-                        //-----------------------------------------------------------------------------
-                        //! Executes the kernel function object.
                         ALPAKA_FN_HOST auto operator()() const
                         -> void
                         {
                             ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
-                            printDebug();
+                            this->printDebug();
 #endif
-                            if(m_extentWidthBytes == 0)
+                            if(static_cast<std::size_t>(this->m_extent.prod()) != 0u)
                             {
-                                return;
+                                this->m_dev.makeCurrent();
+                                this->m_copyPred(
+                                    reinterpret_cast<void *>(this->m_dstMemNative),
+                                    reinterpret_cast<void *>(this->m_srcMemNative),
+                                    static_cast<std::size_t>(this->m_extentWidthBytes));
                             }
-
-                                // omp_target_memcpy(
-                                //     m_dstMemNative, const_cast<void*>(m_srcMemNative), m_extentWidthBytes,
-                                //     0,0, m_iDstDevice, m_iSrcDevice));
                         }
                     };
                 }
@@ -363,54 +229,6 @@ namespace alpaka
             // Trait specializations for CreateTaskCopy.
             namespace traits
             {
-                namespace omp4
-                {
-                    namespace detail
-                    {
-                        //#############################################################################
-                        //! The Oacc memory copy task creation trait detail.
-                        template<
-                            typename TDim,
-                            typename TDevDst,
-                            typename TDevSrc>
-                        struct CreateTaskCopyImpl
-                        {
-                            //-----------------------------------------------------------------------------
-                            template<
-                                typename TExtent,
-                                typename TViewSrc,
-                                typename TViewDst>
-                            ALPAKA_FN_HOST static auto createTaskCopy(
-                                TViewDst & viewDst,
-                                TViewSrc const & viewSrc,
-                                TExtent const & extent,
-                                int iDeviceDst = 0,
-                                int iDeviceSrc = 0
-                                )
-                            -> mem::view::omp4::detail::TaskCopyOacc<
-                                TDim,
-                                TViewDst,
-                                TViewSrc,
-                                TExtent>
-                            {
-                                ALPAKA_DEBUG_FULL_LOG_SCOPE;
-
-                                return
-                                    mem::view::omp4::detail::TaskCopyOacc<
-                                        TDim,
-                                        TViewDst,
-                                        TViewSrc,
-                                        TExtent>(
-                                            viewDst,
-                                            viewSrc,
-                                            extent,
-                                            iDeviceDst,
-                                            iDeviceSrc);
-                            }
-                        };
-                    }
-                }
-
                 //#############################################################################
                 //! The CPU to Oacc memory copy trait specialization.
                 template<
@@ -429,25 +247,21 @@ namespace alpaka
                         TViewDst & viewDst,
                         TViewSrc const & viewSrc,
                         TExtent const & extent)
-                    -> mem::view::omp4::detail::TaskCopyOacc<
-                        TDim,
-                        TViewDst,
-                        TViewSrc,
-                        TExtent>
                     {
                         ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
                         return
-                            mem::view::omp4::detail::TaskCopyOacc<
+                            mem::view::oacc::detail::TaskCopyOacc<
                                 TDim,
                                 TViewDst,
                                 TViewSrc,
-                                TExtent>(
+                                TExtent,
+                                void(*)(void*,void*,size_t)>(
                                     viewDst,
                                     viewSrc,
                                     extent,
-                                    dev::getDev(viewDst).m_spDevOaccImpl->iDevice(),
-                                    omp_get_initial_device()
+                                    dev::getDev(viewDst),
+                                    acc_memcpy_to_device
                                     );
                     }
                 };
@@ -470,29 +284,26 @@ namespace alpaka
                         TViewDst & viewDst,
                         TViewSrc const & viewSrc,
                         TExtent const & extent)
-                    -> mem::view::omp4::detail::TaskCopyOacc<
-                        TDim,
-                        TViewDst,
-                        TViewSrc,
-                        TExtent>
                     {
                         ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
                         return
-                            mem::view::omp4::detail::TaskCopyOacc<
+                            mem::view::oacc::detail::TaskCopyOacc<
                                 TDim,
                                 TViewDst,
                                 TViewSrc,
-                                TExtent>(
+                                TExtent,
+                                void(*)(void*,void*,size_t)>(
                                     viewDst,
                                     viewSrc,
                                     extent,
-                                    omp_get_initial_device(),
-                                    dev::getDev(viewSrc).m_spDevOaccImpl->iDevice()
+                                    dev::getDev(viewDst),
+                                    acc_memcpy_from_device
                                     );
                     }
                 };
 
+#if _OPENACC >= 201510
                 //#############################################################################
                 //! The Oacc to Oacc memory copy trait specialization.
                 template<
@@ -511,28 +322,28 @@ namespace alpaka
                         TViewDst & viewDst,
                         TViewSrc const & viewSrc,
                         TExtent const & extent)
-                    -> mem::view::omp4::detail::TaskCopyOacc<
-                        TDim,
-                        TViewDst,
-                        TViewSrc,
-                        TExtent>
                     {
                         ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
+                        ALPAKA_ASSERT(dev::getDev(viewDst).m_spDevOaccImpl->iDevice()
+                            == dev::getDev(viewSrc).m_spDevOaccImpl->iDevice());
+
                         return
-                            mem::view::omp4::detail::TaskCopyOacc<
+                            mem::view::oacc::detail::TaskCopyOacc<
                                 TDim,
                                 TViewDst,
                                 TViewSrc,
-                                TExtent>(
+                                TExtent,
+                                void(*)(void*,void*,size_t)>(
                                     viewDst,
                                     viewSrc,
                                     extent,
-                                    dev::getDev(viewDst).m_spDevOaccImpl->iDevice(),
-                                    dev::getDev(viewSrc).m_spDevOaccImpl->iDevice()
+                                    dev::getDev(viewDst),
+                                    acc_memcpy_device
                                     );
                     }
                 };
+#endif
             }
         }
     }
