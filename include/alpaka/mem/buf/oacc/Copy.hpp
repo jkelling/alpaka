@@ -42,6 +42,40 @@ namespace alpaka
             {
                 namespace detail
                 {
+                    template<
+                        template<
+                            typename TTDim,
+                            typename TTViewDst,
+                            typename TTViewSrc,
+                            typename TTExtent,
+                            typename TTCopyPred>
+                        typename TTask,
+                        typename TDim,
+                        typename TViewDst,
+                        typename TViewSrc,
+                        typename TExtent,
+                        typename TCopyPred>
+                    auto makeTaskCopyOacc(
+                        TViewDst & viewDst,
+                        TViewSrc const & viewSrc,
+                        TExtent const & extent,
+                        dev::DevOacc const & dev,
+                        TCopyPred copyPred)
+                    {
+                        return TTask<
+                            TDim,
+                            TViewDst,
+                            TViewSrc,
+                            TExtent,
+                            TCopyPred>(
+                                viewDst,
+                                viewSrc,
+                                extent,
+                                dev,
+                                copyPred
+                                );
+                    }
+
                     //#############################################################################
                     //! The OpenAcc device memory copy task base.
                     //!
@@ -217,7 +251,7 @@ namespace alpaka
                                 this->m_dev.makeCurrent();
                                 this->m_copyPred(
                                     reinterpret_cast<void *>(this->m_dstMemNative),
-                                    reinterpret_cast<void *>(this->m_srcMemNative),
+                                    const_cast<void*>(reinterpret_cast<void const *>(this->m_srcMemNative)),
                                     static_cast<std::size_t>(this->m_extentWidthBytes));
                             }
                         }
@@ -250,13 +284,14 @@ namespace alpaka
                     {
                         ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
-                        return
-                            mem::view::oacc::detail::TaskCopyOacc<
+                        return mem::view::oacc::detail::makeTaskCopyOacc<
+                            mem::view::oacc::detail::TaskCopyOacc,
+                            // mem::view::oacc::detail::TaskCopyOacc<
                                 TDim,
                                 TViewDst,
                                 TViewSrc,
-                                TExtent,
-                                void(*)(void*,void*,size_t)>(
+                                TExtent>(
+                            //     void(*)(void*,void*,size_t)>(
                                     viewDst,
                                     viewSrc,
                                     extent,
@@ -287,17 +322,18 @@ namespace alpaka
                     {
                         ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
-                        return
-                            mem::view::oacc::detail::TaskCopyOacc<
+                        return mem::view::oacc::detail::makeTaskCopyOacc<
+                            mem::view::oacc::detail::TaskCopyOacc,
+                            // mem::view::oacc::detail::TaskCopyOacc<
                                 TDim,
                                 TViewDst,
                                 TViewSrc,
-                                TExtent,
-                                void(*)(void*,void*,size_t)>(
+                                TExtent>(
+                            //     void(*)(void*,void*,size_t)>(
                                     viewDst,
                                     viewSrc,
                                     extent,
-                                    dev::getDev(viewDst),
+                                    dev::getDev(viewSrc),
                                     acc_memcpy_from_device
                                     );
                     }
@@ -328,13 +364,14 @@ namespace alpaka
                         ALPAKA_ASSERT(dev::getDev(viewDst).m_spDevOaccImpl->iDevice()
                             == dev::getDev(viewSrc).m_spDevOaccImpl->iDevice());
 
-                        return
-                            mem::view::oacc::detail::TaskCopyOacc<
+                        return mem::view::oacc::detail::makeTaskCopyOacc<
+                            mem::view::oacc::detail::TaskCopyOacc,
+                            // mem::view::oacc::detail::TaskCopyOacc<
                                 TDim,
                                 TViewDst,
                                 TViewSrc,
-                                TExtent,
-                                void(*)(void*,void*,size_t)>(
+                                TExtent>(
+                            //     void(*)(void*,void*,size_t)>(
                                     viewDst,
                                     viewSrc,
                                     extent,
