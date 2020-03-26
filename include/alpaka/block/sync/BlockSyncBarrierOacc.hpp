@@ -11,6 +11,8 @@
 
 #ifdef _OPENACC
 
+#include <alpaka/acc/AccCpuOacc.hpp>
+
 #include <alpaka/block/sync/Traits.hpp>
 
 #include <alpaka/core/Common.hpp>
@@ -23,13 +25,14 @@ namespace alpaka
         namespace sync
         {
             //#############################################################################
-            //! The OpenMP barrier block synchronization.
+            //! The OpenACC barrier block synchronization.
+            //! Traits are specialized on acc::oacc::detail::AccCpuOaccWorker
             class BlockSyncBarrierOacc : public concepts::Implements<ConceptBlockSync, BlockSyncBarrierOacc>
             {
             public:
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST BlockSyncBarrierOacc() :
-                    m_generation(0u)
+                    m_generation(0u), m_syncCounter{0,0}
                 {}
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST BlockSyncBarrierOacc(BlockSyncBarrierOacc const &) = delete;
@@ -43,68 +46,9 @@ namespace alpaka
                 /*virtual*/ ~BlockSyncBarrierOacc() = default;
 
                 std::uint8_t mutable m_generation;
-                int mutable m_result[2];
+                int mutable m_syncCounter[2];
             };
 
-            namespace traits
-            {
-                //#############################################################################
-                template<>
-                struct SyncBlockThreads<
-                    BlockSyncBarrierOacc>
-                {
-                    //-----------------------------------------------------------------------------
-                    ALPAKA_FN_HOST static auto syncBlockThreads(
-                        block::sync::BlockSyncBarrierOacc const & blockSync)
-                    -> void
-                    {
-                        alpaka::ignore_unused(blockSync);
-
-                        // #pragma omp barrier
-                    }
-                };
-
-                namespace detail
-                {
-                    //#############################################################################
-                    template<
-                        typename TOp>
-                    struct AtomicOp;
-                    //#############################################################################
-                    template<>
-                    struct AtomicOp<
-                        block::sync::op::Count>
-                    {
-                        void operator()(int& result, bool value)
-                        {
-                            #pragma acc atomic update
-                            result += static_cast<int>(value);
-                        }
-                    };
-                    //#############################################################################
-                    template<>
-                    struct AtomicOp<
-                        block::sync::op::LogicalAnd>
-                    {
-                        void operator()(int& result, bool value)
-                        {
-                            #pragma acc atomic update
-                            result &= static_cast<int>(value);
-                        }
-                    };
-                    //#############################################################################
-                    template<>
-                    struct AtomicOp<
-                        block::sync::op::LogicalOr>
-                    {
-                        void operator()(int& result, bool value)
-                        {
-                            #pragma acc atomic update
-                            result |= static_cast<int>(value);
-                        }
-                    };
-                }
-            }
         }
     }
 }
