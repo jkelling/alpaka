@@ -31,8 +31,7 @@ namespace alpaka
             {
             public:
                 //-----------------------------------------------------------------------------
-                ALPAKA_FN_HOST BlockSyncBarrierOacc() :
-                    m_generation(0u), m_syncCounter{0,0}
+                ALPAKA_FN_HOST BlockSyncBarrierOacc()
                 {}
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST BlockSyncBarrierOacc(BlockSyncBarrierOacc const &) = delete;
@@ -45,8 +44,8 @@ namespace alpaka
                 //-----------------------------------------------------------------------------
                 /*virtual*/ ~BlockSyncBarrierOacc() = default;
 
-                std::uint8_t mutable m_generation;
-                int mutable m_syncCounter[2];
+                std::uint8_t mutable m_generation = 0u;
+                int mutable m_syncCounter[4] {0,0,0,0};
             };
 
         }
