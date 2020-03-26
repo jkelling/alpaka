@@ -49,7 +49,7 @@ namespace alpaka
 
     namespace dev
     {
-        namespace omp4
+        namespace oacc
         {
             namespace detail
             {
@@ -132,7 +132,7 @@ namespace alpaka
         protected:
             //-----------------------------------------------------------------------------
             DevOacc(int iDevice) :
-                m_spDevOaccImpl(std::make_shared<omp4::detail::DevOaccImpl>())
+                m_spDevOaccImpl(std::make_shared<oacc::detail::DevOaccImpl>())
             {}
         public:
             //-----------------------------------------------------------------------------
@@ -179,7 +179,7 @@ namespace alpaka
             }
 
         public:
-            std::shared_ptr<omp4::detail::DevOaccImpl> m_spDevOaccImpl;
+            std::shared_ptr<oacc::detail::DevOaccImpl> m_spDevOaccImpl;
         };
     }
 
@@ -198,7 +198,7 @@ namespace alpaka
                     dev::DevOacc const &)
                 -> std::string
                 {
-                    return std::string("OMP4 target");
+                    return std::string("OpenACC target");
                 }
             };
 
