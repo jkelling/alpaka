@@ -412,27 +412,30 @@ namespace alpaka
                         TOp &&op = [](){})
                     -> void
                     {
-                        const auto generationEntered = acc.m_generation;
+                        const auto slot = (acc.m_generation&1)<<1;
+                        const int workerNum = static_cast<int>(workdiv::getWorkDiv<Block, Threads>(acc).prod());
                         int sum;
                         #pragma acc atomic capture
-                        sum = ++acc.m_syncCounter[generationEntered&1];
-                        const int workerNum = static_cast<int>(workdiv::getWorkDiv<Block, Threads>(acc).prod());
+                        sum = ++acc.m_syncCounter[slot];
                         if(sum == workerNum)
                         {
                             ++acc.m_generation;
+                            const int nextSlot = (acc.m_generation&1)<<1;
+                            acc.m_syncCounter[nextSlot] = 0;
+                            acc.m_syncCounter[nextSlot+1] = 0;
                             op();
                         }
                         while(sum < workerNum)
                         {
                             #pragma acc atomic read
-                            sum = acc.syncCounter[generationEntered&1];
+                            sum = acc.m_syncCounter[slot];
                         }
-                        #pragma acc atomic update
-                        --acc.syncCounter[generationEntered&1];
-                        while(sum > 0)
+                        #pragma acc atomic capture
+                        sum = ++acc.m_syncCounter[slot+1];
+                        while(sum < workerNum)
                         {
                             #pragma acc atomic read
-                            sum = acc.syncCounter[generationEntered&1];
+                            sum = acc.m_syncCounter[slot+1];
                         }
                     }
 
