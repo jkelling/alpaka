@@ -19,7 +19,7 @@
 #include <alpaka/workdiv/WorkDivOaccBuiltIn.hpp>
 #include <alpaka/idx/gb/IdxGbOaccBuiltIn.hpp>
 #include <alpaka/idx/bt/IdxBtOaccBuiltIn.hpp>
-#include <alpaka/atomic/AtomicNoOp.hpp>
+#include <alpaka/atomic/AtomicOaccBuiltIn.hpp>
 #include <alpaka/atomic/AtomicHierarchy.hpp>
 #include <alpaka/math/MathStdLib.hpp>
 #include <alpaka/block/shared/dyn/BlockSharedMemDynOacc.hpp>
@@ -64,7 +64,7 @@ namespace alpaka
 #else
         constexpr size_t oaccMaxGangNum = ALPAKA_OACC_MAX_GANG_NUM;
 #endif
-#if defined(ALPAKA_OFFLOAD_MAX_BLOCK_SIZE) && ALPAKA_OFFLOAD_MAX_BLOCK_SIZE>0 && 0
+#if defined(ALPAKA_OFFLOAD_MAX_BLOCK_SIZE) && ALPAKA_OFFLOAD_MAX_BLOCK_SIZE>0
         constexpr size_t oaccMaxWorkerNum = ALPAKA_OFFLOAD_MAX_BLOCK_SIZE;
 #else
         constexpr size_t oaccMaxWorkerNum = 1;
@@ -80,9 +80,9 @@ namespace alpaka
             public idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>,
             public idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>,
             public atomic::AtomicHierarchy<
-                atomic::AtomicNoOp,   // grid atomics
-                atomic::AtomicNoOp,    // block atomics
-                atomic::AtomicNoOp     // thread atomics
+                atomic::AtomicOaccBuiltIn,    // grid atomics
+                atomic::AtomicOaccBuiltIn,    // block atomics
+                atomic::AtomicOaccBuiltIn     // thread atomics
             >,
             public math::MathStdLib,
             public block::shared::dyn::BlockSharedMemDynOacc,
@@ -113,9 +113,9 @@ namespace alpaka
                     idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>(gridBlockIdx),
                     idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>(),
                     atomic::AtomicHierarchy<
-                        atomic::AtomicNoOp,// atomics between grids
-                        atomic::AtomicNoOp, // atomics between blocks
-                        atomic::AtomicNoOp  // atomics between threads
+                        atomic::AtomicOaccBuiltIn,    // grid atomics
+                        atomic::AtomicOaccBuiltIn,    // block atomics
+                        atomic::AtomicOaccBuiltIn     // thread atomics
                     >(),
                     math::MathStdLib(),
                     block::shared::dyn::BlockSharedMemDynOacc(static_cast<std::size_t>(blockSharedMemDynSizeBytes)),
@@ -386,6 +386,65 @@ namespace alpaka
                     return idx.m_blockThreadIdx;
                 }
             };
+        }
+    }
+
+    namespace block
+    {
+        namespace sync
+        {
+            namespace traits
+            {
+                //#############################################################################
+                template<
+                    typename TDim,
+                    typename TIdx>
+                struct SyncBlockThreads<
+                    acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx>>
+                {
+                    //-----------------------------------------------------------------------------
+                    //! Execute op with single thread (any idx, last thread to
+                    //! arrive at barrier executes) syncing before and after
+                    template<
+                        typename TOp>
+                    ALPAKA_FN_HOST static auto masterOpBlockThreads(
+                        acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx> const & acc,
+                        TOp &&op = [](){})
+                    -> void
+                    {
+                        const auto generationEntered = acc.m_generation;
+                        int sum;
+                        #pragma acc atomic capture
+                        sum = ++acc.m_syncCounter[generationEntered&1];
+                        const int workerNum = static_cast<int>(workdiv::getWorkDiv<Block, Threads>(acc).prod());
+                        if(sum == workerNum)
+                        {
+                            ++acc.m_generation;
+                            op();
+                        }
+                        while(sum < workerNum)
+                        {
+                            #pragma acc atomic read
+                            sum = acc.syncCounter[generationEntered&1];
+                        }
+                        #pragma acc atomic update
+                        --acc.syncCounter[generationEntered&1];
+                        while(sum > 0)
+                        {
+                            #pragma acc atomic read
+                            sum = acc.syncCounter[generationEntered&1];
+                        }
+                    }
+
+                    //-----------------------------------------------------------------------------
+                    ALPAKA_FN_HOST static auto syncBlockThreads(
+                        acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx> const & acc)
+                    -> void
+                    {
+                        masterOpBlockThreads<>();
+                    }
+                };
+            }
         }
     }
 }
