@@ -46,34 +46,6 @@ namespace alpaka
 {
     namespace kernel
     {
-        namespace openacc
-        {
-            namespace detail
-            {
-                template<
-                    typename TDim,
-                    typename TIdx>
-                struct AccCpuOpenACCWorker
-                {
-                    acc::AccCpuOacc<TDim, TIdx>& m_acc;
-                    vec::Vec<TDim, TIdx> m_blockThreadIdx;
-
-                        operator acc::AccCpuOacc<TDim, TIdx>& () {return m_acc;}
-                        operator acc::AccCpuOacc<TDim, TIdx> const & () const {return m_acc;}
-
-                        AccCpuOpenACCWorker(acc::AccCpuOacc<TDim, TIdx>& acc, const TIdx& wIdx) :
-                            m_acc(acc),
-                            m_blockThreadIdx(
-                                idx::mapIdx<TDim::value>(
-                                    vec::Vec<dim::DimInt<1u>, TIdx>(wIdx),
-                                    workdiv::getWorkDiv<Block, Threads>(acc)
-                                    )
-                                )
-                    {}
-                };
-            }
-        }
-
         //#############################################################################
         //! The CPU OpenMP 4.0 accelerator execution task.
         template<
@@ -151,27 +123,15 @@ namespace alpaka
                 std::cout << __func__
                     << " blockSharedMemDynSizeBytes: " << blockSharedMemDynSizeBytes << " B" << std::endl;
 #endif
-                // We have to make sure, that the OpenMP runtime keeps enough threads for executing a block in parallel.
-                TIdx const maxOmpThreadCount(static_cast<TIdx>(512));
                 // The number of blocks in the grid.
                 TIdx const gridBlockCount(gridBlockExtent.prod());
                 // The number of threads in a block.
                 TIdx const blockThreadCount(blockThreadExtent.prod());
 
-#if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
-                if(maxOmpThreadCount < blockThreadExtent.prod())
-                    std::cout << "Warning: TaskKernelCpuOacc: maxOmpThreadCount smaller than blockThreadCount requested by caller:" <<
-                        maxOmpThreadCount << " < " << blockThreadExtent.prod() << std::endl;
-#endif
                 // make sure there is at least on team
-                TIdx const teamCount(std::max(std::min(static_cast<TIdx>(maxOmpThreadCount/blockThreadCount), gridBlockCount), static_cast<TIdx>(1u)));
+                TIdx const teamCount(gridBlockCount);
                 std::cout << "threadElemCount=" << threadElemExtent[0u] << std::endl;
                 std::cout << "teamCount=" << teamCount << "\tgridBlockCount=" << gridBlockCount << std::endl;
-
-                // if(::omp_in_parallel() != 0)
-                // {
-                //     throw std::runtime_error("The OpenMP 4.0 backend can not be used within an existing parallel region!");
-                // }
 
                 // `When an if(scalar-expression) evaluates to false, the structured block is executed on the host.`
                 auto argsD = m_args;
@@ -180,14 +140,6 @@ namespace alpaka
                 #pragma acc parallel num_gangs(teamCount) num_workers(blockThreadCount)
                 {
                     {
-#if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
-                        // The first team does some checks ...
-                        if((::omp_get_team_num() == 0))
-                        {
-                            int const iNumTeams(::omp_get_num_teams());
-                            printf("%s omp_get_num_teams: %d\n", __func__, iNumTeams);
-                        }
-#endif
                         printf("threadElemCount_dev %d\n", int(threadElemExtent[0u]));
                         // iterate over groups of teams to stay withing thread limit
                         for(TIdx t = 0u; t < gridBlockCount; t+=teamCount)
@@ -208,12 +160,8 @@ namespace alpaka
                                     gridBlockExtent,
                                     blockThreadExtent,
                                     threadElemExtent,
-                                    t,
+                                    b,
                                     blockSharedMemDynSizeBytes);
-
-                                acc.m_gridBlockIdx = idx::mapIdx<TDim::value>(
-                                    gridBlockIdx,
-                                    gridBlockExtent2);
 
                                 // Execute the threads in parallel.
 
@@ -226,7 +174,7 @@ namespace alpaka
                                 for(TIdx w = 0; w < blockThreadCount; ++w)
                                 {
                                     // blockThreadIdx[0] = w;
-                                    auto wacc = typename openacc::detail::AccCpuOpenACCWorker<TDim, TIdx>(
+                                    auto wacc = typename acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx>(
                                             acc,
                                             w
                                             // idx::mapIdx<TDim::value>(
