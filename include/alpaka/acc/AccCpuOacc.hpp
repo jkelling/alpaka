@@ -57,6 +57,19 @@ namespace alpaka
     }
     namespace acc
     {
+        // define max gang/worker num because there is no standart way in OpenACC to
+        // get this information
+#ifndef ALPAKA_OACC_MAX_GANG_NUM
+        constexpr size_t oaccMaxGangNum = std::numeric_limits<unsigned int>::max();
+#else
+        constexpr size_t oaccMaxGangNum = ALPAKA_OACC_MAX_GANG_NUM;
+#endif
+#if defined(ALPAKA_OFFLOAD_MAX_BLOCK_SIZE) && ALPAKA_OFFLOAD_MAX_BLOCK_SIZE>0 && 0
+        constexpr size_t oaccMaxWorkerNum = ALPAKA_OFFLOAD_MAX_BLOCK_SIZE;
+#else
+        constexpr size_t oaccMaxWorkerNum = 1;
+#endif
+
         //#############################################################################
         //! The OpenACC accelerator.
         template<
@@ -94,10 +107,10 @@ namespace alpaka
                 vec::Vec<TDim, TIdx> const & gridBlockExtent,
                 vec::Vec<TDim, TIdx> const & blockThreadExtent,
                 vec::Vec<TDim, TIdx> const & threadElemExtent,
-                TIdx const & teamOffset,
+                TIdx const & gridBlockIdx,
                 TIdx const & blockSharedMemDynSizeBytes) :
                     workdiv::WorkDivOaccBuiltIn<TDim, TIdx>(threadElemExtent, blockThreadExtent, gridBlockExtent),
-                    idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>(teamOffset),
+                    idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>(gridBlockIdx),
                     idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>(),
                     atomic::AtomicHierarchy<
                         atomic::AtomicNoOp,// atomics between grids
@@ -110,8 +123,7 @@ namespace alpaka
                     block::shared::st::BlockSharedMemStOacc(staticMemBegin()),
                     block::sync::BlockSyncBarrierOacc(),
                     rand::RandStdLib(),
-                    time::TimeStdLib(),
-                    m_gridBlockIdx(vec::Vec<TDim, TIdx>::zeros())
+                    time::TimeStdLib()
             {}
 
         public:
@@ -125,10 +137,6 @@ namespace alpaka
             auto operator=(AccCpuOacc &&) -> AccCpuOacc & = delete;
             //-----------------------------------------------------------------------------
             /*virtual*/ ~AccCpuOacc() = default;
-
-        private:
-            // getIdx
-            vec::Vec<TDim, TIdx> m_gridBlockIdx;    //!< The index of the currently executed block.
         };
     }
 
@@ -161,17 +169,12 @@ namespace alpaka
                 {
                     alpaka::ignore_unused(dev);
 
-#if defined(ALPAKA_OFFLOAD_MAX_BLOCK_SIZE) && ALPAKA_OFFLOAD_MAX_BLOCK_SIZE>0
-                    auto const blockThreadCount = ALPAKA_OFFLOAD_MAX_BLOCK_SIZE;
-#else
-                    auto const blockThreadCount = ::omp_get_max_threads();
-#endif
 #ifdef ALPAKA_CI
-                    auto const blockThreadCountMax(alpaka::core::clipCast<TIdx>(std::min(4, blockThreadCount)));
-                    auto const gridBlockCountMax(alpaka::core::clipCast<TIdx>(std::min(4, ::omp_get_max_threads())));
+                    auto const blockThreadCountMax(alpaka::core::clipCast<TIdx>(std::min(4, oaccMaxWorkerNum)));
+                    auto const gridBlockCountMax(alpaka::core::clipCast<TIdx>(std::min(4, oaccMaxGangNum)));
 #else
-                    auto const blockThreadCountMax(alpaka::core::clipCast<TIdx>(blockThreadCount));
-                    auto const gridBlockCountMax(alpaka::core::clipCast<TIdx>(::omp_get_max_threads())); //! \todo fix max block size for target
+                    auto const blockThreadCountMax(alpaka::core::clipCast<TIdx>(oaccMaxWorkerNum));
+                    auto const gridBlockCountMax(alpaka::core::clipCast<TIdx>(oaccMaxGangNum));
 #endif
                     return {
                         // m_multiProcessorCount
@@ -191,7 +194,7 @@ namespace alpaka
                 }
             };
             //#############################################################################
-            //! The CPU OpenMP 4.0 accelerator name trait specialization.
+            //! The OpenACC accelerator name trait specialization.
             template<
                 typename TDim,
                 typename TIdx>
@@ -305,6 +308,83 @@ namespace alpaka
                 acc::AccCpuOacc<TDim, TIdx>>
             {
                 using type = TIdx;
+            };
+        }
+    }
+
+    namespace acc
+    {
+        namespace oacc
+        {
+            namespace detail
+            {
+                template<
+                    typename TDim,
+                    typename TIdx>
+                struct AccCpuOaccWorker
+                {
+                    acc::AccCpuOacc<TDim, TIdx>& m_acc;
+                    const TIdx m_blockThreadIdx;
+
+                        operator acc::AccCpuOacc<TDim, TIdx>& () {return m_acc;}
+                        operator acc::AccCpuOacc<TDim, TIdx> const & () const {return m_acc;}
+
+                        AccCpuOaccWorker(acc::AccCpuOacc<TDim, TIdx>& acc, const TIdx& wIdx) :
+                            m_acc(acc),
+                            m_blockThreadIdx(wIdx)
+                    {}
+                };
+            }
+        }
+    }
+
+    namespace idx
+    {
+        namespace traits
+        {
+            //#############################################################################
+            //! The OpenACC accelerator block thread index get trait specialization.
+            template<
+                typename TDim,
+                typename TIdx>
+            struct GetIdx<
+                acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx>,
+                origin::Block,
+                unit::Threads>
+            {
+                //-----------------------------------------------------------------------------
+                //! \return The index of the current thread in the block.
+                template<
+                    typename TWorkDiv>
+                static auto getIdx(
+                    acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx> const &idx,
+                    TWorkDiv const & workDiv)
+                -> vec::Vec<TDim, TIdx>
+                {
+                    return idx::mapIdx<TDim::value>(
+                        vec::Vec<dim::DimInt<1u>, TIdx>(idx.m_blockThreadIdx),
+                        workdiv::getWorkDiv<Block, Threads>(workDiv));
+                }
+            };
+
+            template<
+                typename TIdx>
+            struct GetIdx<
+                acc::oacc::detail::AccCpuOaccWorker<dim::DimInt<1u>, TIdx>,
+                origin::Block,
+                unit::Threads>
+            {
+                //-----------------------------------------------------------------------------
+                //! \return The index of the current thread in the block.
+                template<
+                    typename TWorkDiv>
+                static auto getIdx(
+                    acc::oacc::detail::AccCpuOaccWorker<dim::DimInt<1u>, TIdx> const & idx,
+                    TWorkDiv const &)
+                -> vec::Vec<dim::DimInt<1u>, TIdx>
+                {
+                    return idx.m_blockThreadIdx;
+                }
             };
         }
     }

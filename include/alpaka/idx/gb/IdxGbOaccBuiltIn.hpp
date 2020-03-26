@@ -38,7 +38,7 @@ namespace alpaka
             {
             public:
                 //-----------------------------------------------------------------------------
-                IdxGbOaccBuiltIn(const TIdx &teamOffset = static_cast<TIdx>(0u)) : m_teamOffset(teamOffset) {}
+                IdxGbOaccBuiltIn(const TIdx &gridBlockIdx) : m_gridBlockIdx(gridBlockIdx) {}
                 //-----------------------------------------------------------------------------
                 IdxGbOaccBuiltIn(IdxGbOaccBuiltIn const &) = delete;
                 //-----------------------------------------------------------------------------
@@ -50,7 +50,7 @@ namespace alpaka
                 //-----------------------------------------------------------------------------
                 /*virtual*/ ~IdxGbOaccBuiltIn() = default;
 
-                TIdx const m_teamOffset; //! \todo what is this for?
+                TIdx const m_gridBlockIdx;
             };
         }
     }
@@ -95,9 +95,9 @@ namespace alpaka
                 -> vec::Vec<TDim, TIdx>
                 {
                     // // \TODO: Would it be faster to precompute the index and cache it inside an array?
-                    // return idx::mapIdx<TDim::value>(
-                    //     vec::Vec<dim::DimInt<1u>, TIdx>(static_cast<TIdx>(idx.m_teamOffset + static_cast<TIdx>(::omp_get_team_num()))),
-                    //     workdiv::getWorkDiv<Grid, Blocks>(workDiv));
+                    return idx::mapIdx<TDim::value>(
+                        vec::Vec<dim::DimInt<1u>, TIdx>(idx.m_gridBlockIdx),
+                        workdiv::getWorkDiv<Grid, Blocks>(workDiv));
                 }
             };
 
@@ -117,7 +117,7 @@ namespace alpaka
                     TWorkDiv const &)
                 -> vec::Vec<dim::DimInt<1u>, TIdx>
                 {
-                    // return static_cast<TIdx>(idx.m_teamOffset + static_cast<TIdx>(omp_get_team_num()));
+                    return idx.m_gridBlockIdx;
                 }
             };
         }
