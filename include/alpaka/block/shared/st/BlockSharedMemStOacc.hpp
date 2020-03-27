@@ -16,6 +16,7 @@
 #endif
 
 #include <alpaka/block/shared/st/Traits.hpp>
+#include <alpaka/block/sync/Traits.hpp>
 
 #include <type_traits>
 #include <cstdint>
@@ -31,7 +32,9 @@ namespace alpaka
             {
                 //#############################################################################
                 //! The GPU CUDA block shared memory allocator.
-                class BlockSharedMemStOacc : public concepts::Implements<ConceptBlockSharedSt, BlockSharedMemStOacc>
+                template<
+                    typename TAcc>
+                class BlockSharedMemStOacc : public concepts::Implements<ConceptBlockSharedSt, BlockSharedMemStOacc<TAcc>>
                 {
                     mutable unsigned int m_allocdBytes = 0;
                     mutable char* m_mem;
@@ -50,18 +53,18 @@ namespace alpaka
                     //-----------------------------------------------------------------------------
                     /*virtual*/ ~BlockSharedMemStOacc() = default;
 
-                    template<class T>
+                    template<typename T>
                     T& alloc() const
                     {
-                        #pragma omp barrier
-                        if(omp_get_thread_num() == 0)
-                        {
-                            char* buf = &m_mem[m_allocdBytes];
-                            new (buf) T();
-                            m_allocdBytes += sizeof(T);
-                        }
-                        #pragma omp barrier
-                        return *reinterpret_cast<T*>(&m_mem[m_allocdBytes-sizeof(T)]);
+                       block::sync::traits::SyncBlockThreads<TAcc>::masterOpBlockThreads(
+                           static_cast<TAcc>(*this),
+                           [this](){
+                               char* buf = &m_mem[m_allocdBytes];
+                               new (buf) T();
+                               m_allocdBytes += sizeof(T);
+                               }
+                           );
+                       return *reinterpret_cast<T*>(&m_mem[m_allocdBytes-sizeof(T)]);
                     }
                 };
 
@@ -70,31 +73,33 @@ namespace alpaka
                     //#############################################################################
                     template<
                         typename T,
+                        typename TAcc,
                         std::size_t TuniqueId>
                     struct AllocVar<
                         T,
                         TuniqueId,
-                        BlockSharedMemStOacc>
+                        BlockSharedMemStOacc<TAcc>>
                     {
                         //-----------------------------------------------------------------------------
                         static auto allocVar(
-                            block::shared::st::BlockSharedMemStOacc const &smem)
+                            block::shared::st::BlockSharedMemStOacc<TAcc> const &smem)
                         -> T &
                         {
-                            return smem.alloc<T>();
+                            return smem.template alloc<T>();
                         }
                     };
                     //#############################################################################
-                    template<>
+                    template<
+                        typename TAcc>
                     struct FreeMem<
-                        BlockSharedMemStOacc>
+                        BlockSharedMemStOacc<TAcc>>
                     {
                         //-----------------------------------------------------------------------------
                         static auto freeMem(
-                            block::shared::st::BlockSharedMemStOacc const &)
+                            block::shared::st::BlockSharedMemStOacc<TAcc> const &)
                         -> void
                         {
-                            // Nothing to do. CUDA block shared memory is automatically freed when all threads left the block.
+                            // Nothing to do. Block shared memory is automatically freed when all threads left the block.
                         }
                     };
                 }
