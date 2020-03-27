@@ -400,7 +400,7 @@ namespace alpaka
                     typename TDim,
                     typename TIdx>
                 struct SyncBlockThreads<
-                    acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx>>
+                    acc::AccCpuOacc<TDim, TIdx>>
                 {
                     //-----------------------------------------------------------------------------
                     //! Execute op with single thread (any idx, last thread to
@@ -408,7 +408,7 @@ namespace alpaka
                     template<
                         typename TOp>
                     ALPAKA_FN_HOST static auto masterOpBlockThreads(
-                        acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx> const & acc,
+                        acc::AccCpuOacc<TDim, TIdx> const & acc,
                         TOp &&op = [](){})
                     -> void
                     {
@@ -416,7 +416,10 @@ namespace alpaka
                         const int workerNum = static_cast<int>(workdiv::getWorkDiv<Block, Threads>(acc).prod());
                         int sum;
                         #pragma acc atomic capture
-                        sum = ++acc.m_syncCounter[slot];
+                        {
+                            ++acc.m_syncCounter[slot];
+                            sum = acc.m_syncCounter[slot];
+                        }
                         if(sum == workerNum)
                         {
                             ++acc.m_generation;
@@ -431,7 +434,10 @@ namespace alpaka
                             sum = acc.m_syncCounter[slot];
                         }
                         #pragma acc atomic capture
-                        sum = ++acc.m_syncCounter[slot+1];
+                        {
+                            ++acc.m_syncCounter[slot];
+                            sum = acc.m_syncCounter[slot];
+                        }
                         while(sum < workerNum)
                         {
                             #pragma acc atomic read
@@ -441,7 +447,7 @@ namespace alpaka
 
                     //-----------------------------------------------------------------------------
                     ALPAKA_FN_HOST static auto syncBlockThreads(
-                        acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx> const & acc)
+                        acc::AccCpuOacc<TDim, TIdx> const & acc)
                     -> void
                     {
                         masterOpBlockThreads<>();
