@@ -145,7 +145,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 accelerator accelerator type trait specialization.
+            //! The CPU OpenACC accelerator accelerator type trait specialization.
             template<
                 typename TDim,
                 typename TIdx>
@@ -155,7 +155,7 @@ namespace alpaka
                 using type = acc::AccCpuOacc<TDim, TIdx>;
             };
             //#############################################################################
-            //! The CPU OpenMP 4.0 accelerator device properties get trait specialization.
+            //! The CPU OpenACC accelerator device properties get trait specialization.
             template<
                 typename TDim,
                 typename TIdx>
@@ -215,7 +215,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 accelerator device type trait specialization.
+            //! The CPU OpenACC accelerator device type trait specialization.
             template<
                 typename TDim,
                 typename TIdx>
@@ -231,7 +231,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 accelerator dimension getter trait specialization.
+            //! The CPU OpenACC accelerator dimension getter trait specialization.
             template<
                 typename TDim,
                 typename TIdx>
@@ -247,7 +247,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 accelerator execution task type trait specialization.
+            //! The CPU OpenACC accelerator execution task type trait specialization.
             template<
                 typename TDim,
                 typename TIdx,
@@ -284,7 +284,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 execution task platform type trait specialization.
+            //! The CPU OpenACC execution task platform type trait specialization.
             template<
                 typename TDim,
                 typename TIdx>
@@ -300,7 +300,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 accelerator idx type trait specialization.
+            //! The CPU OpenACC accelerator idx type trait specialization.
             template<
                 typename TDim,
                 typename TIdx>
