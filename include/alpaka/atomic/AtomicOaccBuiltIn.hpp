@@ -43,8 +43,9 @@ namespace alpaka
         namespace traits
         {
 
-// "omp atomic update capture" is not supported before OpenACC 2.5
-#if _OPENACC >= 201510
+// "omp atomic update capture" is not supported before OpenACC 2.5 and by PGI
+// "omp atomic capture {}" works for PGI and GCC, using this even though non-standart
+// #if _OPENACC >= 201510
 
             //#############################################################################
             //! The OpenACC accelerators atomic operation: ADD
@@ -67,7 +68,7 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
-                    #pragma acc atomic update capture
+                    #pragma acc atomic capture
                     {
                         old = ref;
                         ref += value;
@@ -97,7 +98,7 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
-                    #pragma acc atomic update capture
+                    #pragma acc atomic capture
                     {
                         old = ref;
                         ref -= value;
@@ -127,7 +128,7 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
-                    #pragma acc atomic update capture
+                    #pragma acc atomic capture
                     {
                         old = ref;
                         ref = value;
@@ -157,7 +158,7 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
-                    #pragma acc atomic update capture
+                    #pragma acc atomic capture
                     {
                         old = ref;
                         ref &= value;
@@ -187,7 +188,7 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
-                    #pragma acc atomic update capture
+                    #pragma acc atomic capture
                     {
                         old = ref;
                         ref |= value;
@@ -217,7 +218,7 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
-                    #pragma acc atomic update capture
+                    #pragma acc atomic capture
                     {
                         old = ref;
                         ref ^= value;
@@ -225,90 +226,7 @@ namespace alpaka
                     return old;
                 }
             };
-
-#else // _OPENACC < 201510
-
-            //#############################################################################
-            //! The OpenACC accelerators atomic operation: ADD
-            template<
-                typename T,
-                typename THierarchy>
-            struct AtomicOp<
-                op::Add,
-                atomic::AtomicOaccBuiltIn,
-                T,
-                THierarchy>
-            {
-                //-----------------------------------------------------------------------------
-                ALPAKA_FN_HOST_ACC static auto atomicOp(
-                    atomic::AtomicOaccBuiltIn const &,
-                    T * const addr,
-                    T const & value)
-                -> T
-                {
-                    T old;
-                    auto & ref(*addr);
-                    // atomically update ref, but capture the original value in old
-                    #pragma acc atomic capture
-                    old = ref += value;
-                    return old - ref;
-                }
-            };
-
-            //#############################################################################
-            //! The OpenACC accelerators atomic operation: SUB
-            template<
-                typename T,
-                typename THierarchy>
-            struct AtomicOp<
-                op::Sub,
-                atomic::AtomicOaccBuiltIn,
-                T,
-                THierarchy>
-            {
-                //-----------------------------------------------------------------------------
-                ALPAKA_FN_HOST_ACC static auto atomicOp(
-                    atomic::AtomicOaccBuiltIn const &,
-                    T * const addr,
-                    T const & value)
-                -> T
-                {
-                    T old;
-                    auto & ref(*addr);
-                    // atomically update ref, but capture the original value in old
-                    #pragma acc atomic capture
-                    old = ref -= value;
-                    return old + ref;
-                }
-            };
-
-            //#############################################################################
-            //! The OpenACC accelerators atomic operation: XOR
-            template<
-                typename T,
-                typename THierarchy>
-            struct AtomicOp<
-                op::Xor,
-                atomic::AtomicOaccBuiltIn,
-                T,
-                THierarchy>
-            {
-                //-----------------------------------------------------------------------------
-                ALPAKA_FN_HOST_ACC static auto atomicOp(
-                    atomic::AtomicOaccBuiltIn const &,
-                    T * const addr,
-                    T const & value)
-                -> T
-                {
-                    T old;
-                    auto & ref(*addr);
-                    // atomically update ref, but capture the original value in old
-                    #pragma acc atomic capture
-                    old = ref ^= value;
-                    return old ^ ref;
-                }
-            };
-#endif
+// #endif
         }
     }
 }
