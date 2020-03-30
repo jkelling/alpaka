@@ -38,7 +38,7 @@ namespace alpaka
             {
             public:
                 //-----------------------------------------------------------------------------
-                IdxBtOaccBuiltIn() = default;
+                IdxBtOaccBuiltIn(TIdx blockThreadIdx) : m_blockThreadIdx(blockThreadIdx) {};
                 //-----------------------------------------------------------------------------
                 IdxBtOaccBuiltIn(IdxBtOaccBuiltIn const &) = delete;
                 //-----------------------------------------------------------------------------
@@ -49,6 +49,8 @@ namespace alpaka
                 auto operator=(IdxBtOaccBuiltIn &&) -> IdxBtOaccBuiltIn & = delete;
                 //-----------------------------------------------------------------------------
                 /*virtual*/ ~IdxBtOaccBuiltIn() = default;
+
+                const TIdx m_blockThreadIdx;
             };
         }
     }
@@ -74,6 +76,51 @@ namespace alpaka
     {
         namespace traits
         {
+            //#############################################################################
+            //! The OpenACC accelerator block thread index get trait specialization.
+            template<
+                typename TDim,
+                typename TIdx>
+            struct GetIdx<
+                idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>,
+                origin::Block,
+                unit::Threads>
+            {
+                //-----------------------------------------------------------------------------
+                //! \return The index of the current thread in the block.
+                template<
+                    typename TWorkDiv>
+                static auto getIdx(
+                    idx::bt::IdxBtOaccBuiltIn<TDim, TIdx> const &idx,
+                    TWorkDiv const & workDiv)
+                -> vec::Vec<TDim, TIdx>
+                {
+                    return idx::mapIdx<TDim::value>(
+                        vec::Vec<dim::DimInt<1u>, TIdx>(idx.m_blockThreadIdx),
+                        workdiv::getWorkDiv<Block, Threads>(workDiv));
+                }
+            };
+
+            template<
+                typename TIdx>
+            struct GetIdx<
+                idx::bt::IdxBtOaccBuiltIn<dim::DimInt<1u>, TIdx>,
+                origin::Block,
+                unit::Threads>
+            {
+                //-----------------------------------------------------------------------------
+                //! \return The index of the current thread in the block.
+                template<
+                    typename TWorkDiv>
+                static auto getIdx(
+                    idx::bt::IdxBtOaccBuiltIn<dim::DimInt<1u>, TIdx> const & idx,
+                    TWorkDiv const &)
+                -> vec::Vec<dim::DimInt<1u>, TIdx>
+                {
+                    return idx.m_blockThreadIdx;
+                }
+            };
+
             //#############################################################################
             //! The OpenACC accelerator block thread index idx type trait specialization.
             template<
