@@ -29,15 +29,12 @@ namespace alpaka
             namespace dyn
             {
                 //#############################################################################
-                //! The GPU CUDA block shared memory allocator.
+                //! The OpenACC block shared memory allocator.
                 class BlockSharedMemDynOacc : public concepts::Implements<ConceptBlockSharedDyn, BlockSharedMemDynOacc>
                 {
-                    mutable std::array<char, 30<<10> m_mem; // ! static 30kB
-                    std::size_t m_dynSize;
-
                 public:
                     //-----------------------------------------------------------------------------
-                    BlockSharedMemDynOacc(size_t sizeBytes) : m_dynSize(sizeBytes) {}
+                    BlockSharedMemDynOacc() = default;
                     //-----------------------------------------------------------------------------
                     BlockSharedMemDynOacc(BlockSharedMemDynOacc const &) = delete;
                     //-----------------------------------------------------------------------------
@@ -49,28 +46,29 @@ namespace alpaka
                     //-----------------------------------------------------------------------------
                     /*virtual*/ ~BlockSharedMemDynOacc() = default;
 
-                    char* dynMemBegin() const {return m_mem.data();}
-                    char* staticMemBegin() const {return m_mem.data()+m_dynSize;}
-                };
-
-                namespace traits
-                {
-                    //#############################################################################
-                    template<
-                        typename T>
-                    struct GetMem<
-                        T,
-                        BlockSharedMemDynOacc>
+                    class BlockShared : public concepts::Implements<ConceptBlockSharedDyn, BlockShared>
                     {
+                        mutable std::array<char, 30<<10> m_mem; // ! static 30kB
+                        std::size_t m_dynSize;
+
+                    public:
                         //-----------------------------------------------------------------------------
-                        static auto getMem(
-                            block::shared::dyn::BlockSharedMemDynOacc const &mem)
-                        -> T *
-                        {
-                            return reinterpret_cast<T*>(mem.dynMemBegin());
-                        }
+                        BlockShared(size_t sizeBytes) : m_dynSize(sizeBytes) {}
+                        //-----------------------------------------------------------------------------
+                        BlockShared(BlockShared const &) = delete;
+                        //-----------------------------------------------------------------------------
+                        BlockShared(BlockShared &&) = delete;
+                        //-----------------------------------------------------------------------------
+                        auto operator=(BlockShared const &) -> BlockShared & = delete;
+                        //-----------------------------------------------------------------------------
+                        auto operator=(BlockShared &&) -> BlockShared & = delete;
+                        //-----------------------------------------------------------------------------
+                        /*virtual*/ ~BlockShared() = default;
+
+                        char* dynMemBegin() const {return m_mem.data();}
+                        char* staticMemBegin() const {return m_mem.data()+m_dynSize;}
                     };
-                }
+                };
             }
         }
     }

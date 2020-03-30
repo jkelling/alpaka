@@ -38,7 +38,7 @@ namespace alpaka
             {
             public:
                 //-----------------------------------------------------------------------------
-                IdxGbOaccBuiltIn(const TIdx &gridBlockIdx) : m_gridBlockIdx(gridBlockIdx) {}
+                IdxGbOaccBuiltIn() = default;
                 //-----------------------------------------------------------------------------
                 IdxGbOaccBuiltIn(IdxGbOaccBuiltIn const &) = delete;
                 //-----------------------------------------------------------------------------
@@ -50,7 +50,24 @@ namespace alpaka
                 //-----------------------------------------------------------------------------
                 /*virtual*/ ~IdxGbOaccBuiltIn() = default;
 
-                TIdx const m_gridBlockIdx;
+                class BlockShared : public concepts::Implements<ConceptIdxGb, BlockShared>
+                {
+                public:
+                    //-----------------------------------------------------------------------------
+                    BlockShared(const TIdx &gridBlockIdx) : m_gridBlockIdx(gridBlockIdx) {}
+                    //-----------------------------------------------------------------------------
+                    BlockShared(BlockShared const &) = delete;
+                    //-----------------------------------------------------------------------------
+                    BlockShared(BlockShared &&) = delete;
+                    //-----------------------------------------------------------------------------
+                    auto operator=(BlockShared const & ) -> BlockShared & = delete;
+                    //-----------------------------------------------------------------------------
+                    auto operator=(BlockShared &&) -> BlockShared & = delete;
+                    //-----------------------------------------------------------------------------
+                    /*virtual*/ ~BlockShared() = default;
+
+                    TIdx const m_gridBlockIdx;
+                };
             };
         }
     }
@@ -71,57 +88,7 @@ namespace alpaka
             };
         }
     }
-    namespace idx
-    {
-        namespace traits
-        {
-            //#############################################################################
-            //! The GPU CUDA accelerator grid block index get trait specialization.
-            template<
-                typename TDim,
-                typename TIdx>
-            struct GetIdx<
-                idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>,
-                origin::Grid,
-                unit::Blocks>
-            {
-                //-----------------------------------------------------------------------------
-                //! \return The index of the current block in the grid.
-                template<
-                    typename TWorkDiv>
-                static auto getIdx(
-                    idx::gb::IdxGbOaccBuiltIn<TDim, TIdx> const & idx,
-                    TWorkDiv const & workDiv)
-                -> vec::Vec<TDim, TIdx>
-                {
-                    // // \TODO: Would it be faster to precompute the index and cache it inside an array?
-                    return idx::mapIdx<TDim::value>(
-                        vec::Vec<dim::DimInt<1u>, TIdx>(idx.m_gridBlockIdx),
-                        workdiv::getWorkDiv<Grid, Blocks>(workDiv));
-                }
-            };
 
-            template<
-                typename TIdx>
-            struct GetIdx<
-                idx::gb::IdxGbOaccBuiltIn<dim::DimInt<1u>, TIdx>,
-                origin::Grid,
-                unit::Blocks>
-            {
-                //-----------------------------------------------------------------------------
-                //! \return The index of the current block in the grid.
-                template<
-                    typename TWorkDiv>
-                static auto getIdx(
-                    idx::gb::IdxGbOaccBuiltIn<dim::DimInt<1u>, TIdx> const & idx,
-                    TWorkDiv const &)
-                -> vec::Vec<dim::DimInt<1u>, TIdx>
-                {
-                    return idx.m_gridBlockIdx;
-                }
-            };
-        }
-    }
     namespace idx
     {
         namespace traits
