@@ -32,16 +32,11 @@ namespace alpaka
             {
                 //#############################################################################
                 //! The GPU CUDA block shared memory allocator.
-                template<
-                    typename TAcc>
-                class BlockSharedMemStOacc : public concepts::Implements<ConceptBlockSharedSt, BlockSharedMemStOacc<TAcc>>
+                class BlockSharedMemStOacc : public concepts::Implements<ConceptBlockSharedSt, BlockSharedMemStOacc>
                 {
-                    mutable unsigned int m_allocdBytes = 0;
-                    mutable char* m_mem;
-
                 public:
                     //-----------------------------------------------------------------------------
-                    BlockSharedMemStOacc(char* mem) : m_mem(mem) {}
+                    BlockSharedMemStOacc() = default;
                     //-----------------------------------------------------------------------------
                     BlockSharedMemStOacc(BlockSharedMemStOacc const &) = delete;
                     //-----------------------------------------------------------------------------
@@ -53,50 +48,54 @@ namespace alpaka
                     //-----------------------------------------------------------------------------
                     /*virtual*/ ~BlockSharedMemStOacc() = default;
 
-                    template<typename T>
-                    T& alloc() const
+                    template<
+                        typename TAcc>
+                    class BlockShared : public concepts::Implements<ConceptBlockSharedSt, BlockShared<TAcc>>
                     {
-                       block::sync::traits::SyncBlockThreads<TAcc>::masterOpBlockThreads(
-                           static_cast<TAcc>(*this),
-                           [this](){
-                               char* buf = &m_mem[m_allocdBytes];
-                               new (buf) T();
-                               m_allocdBytes += sizeof(T);
-                               }
-                           );
-                       return *reinterpret_cast<T*>(&m_mem[m_allocdBytes-sizeof(T)]);
-                    }
+                        mutable unsigned int m_allocdBytes = 0;
+                        mutable char* m_mem;
+
+                        public:
+
+                        BlockShared(char* mem) : m_mem(mem) {}
+                        //-----------------------------------------------------------------------------
+                        BlockShared(BlockSharedMemStOacc const &) = delete;
+                        //-----------------------------------------------------------------------------
+                        BlockShared(BlockSharedMemStOacc &&) = delete;
+                        //-----------------------------------------------------------------------------
+                        auto operator=(BlockShared const &) -> BlockShared & = delete;
+                        //-----------------------------------------------------------------------------
+                        auto operator=(BlockShared &&) -> BlockShared & = delete;
+                        //-----------------------------------------------------------------------------
+                        /*virtual*/ ~BlockShared() = default;
+
+                        template<typename T>
+                        T& alloc() const
+                        {
+                           block::sync::traits::SyncBlockThreads<TAcc>::masterOpBlockThreads(
+                               static_cast<TAcc>(*this),
+                               [this](){
+                                   char* buf = &m_mem[m_allocdBytes];
+                                   new (buf) T();
+                                   m_allocdBytes += sizeof(T);
+                                   }
+                               );
+                           return *reinterpret_cast<T*>(&m_mem[m_allocdBytes-sizeof(T)]);
+                        }
+                    };
                 };
 
                 namespace traits
                 {
                     //#############################################################################
                     template<
-                        typename T,
-                        typename TAcc,
-                        std::size_t TuniqueId>
-                    struct AllocVar<
-                        T,
-                        TuniqueId,
-                        BlockSharedMemStOacc<TAcc>>
-                    {
-                        //-----------------------------------------------------------------------------
-                        static auto allocVar(
-                            block::shared::st::BlockSharedMemStOacc<TAcc> const &smem)
-                        -> T &
-                        {
-                            return smem.template alloc<T>();
-                        }
-                    };
-                    //#############################################################################
-                    template<
                         typename TAcc>
                     struct FreeMem<
-                        BlockSharedMemStOacc<TAcc>>
+                        BlockSharedMemStOacc::BlockShared<TAcc>>
                     {
                         //-----------------------------------------------------------------------------
                         static auto freeMem(
-                            block::shared::st::BlockSharedMemStOacc<TAcc> const &)
+                            BlockSharedMemStOacc::BlockShared<TAcc> const &)
                         -> void
                         {
                             // Nothing to do. Block shared memory is automatically freed when all threads left the block.
