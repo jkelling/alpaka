@@ -53,7 +53,7 @@ namespace alpaka
             typename TIdx,
             typename TKernelFnObj,
             typename... TArgs>
-        class TaskKernelCpuOacc;
+        class TaskKernelOacc;
     }
     namespace acc
     {
@@ -75,7 +75,7 @@ namespace alpaka
         template<
             typename TDim,
             typename TIdx>
-        class AccCpuOacc :
+        class AccOacc :
             public workdiv::WorkDivOaccBuiltIn<TDim, TIdx>,
             public idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>,
             public atomic::AtomicHierarchy<
@@ -90,12 +90,12 @@ namespace alpaka
             public block::shared::dyn::BlockSharedMemDynOacc, // dummy
             public block::shared::st::BlockSharedMemStOacc, // dummy
             public block::sync::BlockSyncBarrierOacc, // dummy
-            public concepts::Implements<ConceptAcc, AccCpuOacc<TDim, TIdx>>
+            public concepts::Implements<ConceptAcc, AccOacc<TDim, TIdx>>
         {
 
         protected:
             //-----------------------------------------------------------------------------
-            AccCpuOacc(
+            AccOacc(
                 vec::Vec<TDim, TIdx> const & threadElemExtent,
                 vec::Vec<TDim, TIdx> const & blockThreadExtent,
                 vec::Vec<TDim, TIdx> const & gridBlockExtent,
@@ -119,15 +119,15 @@ namespace alpaka
 
         public:
             //-----------------------------------------------------------------------------
-            AccCpuOacc(AccCpuOacc const &) = delete;
+            AccOacc(AccOacc const &) = delete;
             //-----------------------------------------------------------------------------
-            AccCpuOacc(AccCpuOacc &&) = delete;
+            AccOacc(AccOacc &&) = delete;
             //-----------------------------------------------------------------------------
-            auto operator=(AccCpuOacc const &) -> AccCpuOacc & = delete;
+            auto operator=(AccOacc const &) -> AccOacc & = delete;
             //-----------------------------------------------------------------------------
-            auto operator=(AccCpuOacc &&) -> AccCpuOacc & = delete;
+            auto operator=(AccOacc &&) -> AccOacc & = delete;
             //-----------------------------------------------------------------------------
-            /*virtual*/ ~AccCpuOacc() = default;
+            /*virtual*/ ~AccOacc() = default;
         };
     }
 
@@ -141,9 +141,9 @@ namespace alpaka
                 typename TDim,
                 typename TIdx>
             struct AccType<
-                acc::AccCpuOacc<TDim, TIdx>>
+                acc::AccOacc<TDim, TIdx>>
             {
-                using type = acc::AccCpuOacc<TDim, TIdx>;
+                using type = acc::AccOacc<TDim, TIdx>;
             };
             //#############################################################################
             //! The CPU OpenACC accelerator device properties get trait specialization.
@@ -151,7 +151,7 @@ namespace alpaka
                 typename TDim,
                 typename TIdx>
             struct GetAccDevProps<
-                acc::AccCpuOacc<TDim, TIdx>>
+                acc::AccOacc<TDim, TIdx>>
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto getAccDevProps(
@@ -190,13 +190,13 @@ namespace alpaka
                 typename TDim,
                 typename TIdx>
             struct GetAccName<
-                acc::AccCpuOacc<TDim, TIdx>>
+                acc::AccOacc<TDim, TIdx>>
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto getAccName()
                 -> std::string
                 {
-                    return "AccCpuOacc<" + std::to_string(TDim::value) + "," + typeid(TIdx).name() + ">";
+                    return "AccOacc<" + std::to_string(TDim::value) + "," + typeid(TIdx).name() + ">";
                 }
             };
         }
@@ -211,7 +211,7 @@ namespace alpaka
                 typename TDim,
                 typename TIdx>
             struct DevType<
-                acc::AccCpuOacc<TDim, TIdx>>
+                acc::AccOacc<TDim, TIdx>>
             {
                 using type = dev::DevOacc;
             };
@@ -227,7 +227,7 @@ namespace alpaka
                 typename TDim,
                 typename TIdx>
             struct DimType<
-                acc::AccCpuOacc<TDim, TIdx>>
+                acc::AccOacc<TDim, TIdx>>
             {
                 using type = TDim;
             };
@@ -246,7 +246,7 @@ namespace alpaka
                 typename TKernelFnObj,
                 typename... TArgs>
             struct CreateTaskKernel<
-                acc::AccCpuOacc<TDim, TIdx>,
+                acc::AccOacc<TDim, TIdx>,
                 TWorkDiv,
                 TKernelFnObj,
                 TArgs...>
@@ -258,7 +258,7 @@ namespace alpaka
                     TArgs && ... args)
                 {
                     return
-                        kernel::TaskKernelCpuOacc<
+                        kernel::TaskKernelOacc<
                             TDim,
                             TIdx,
                             TKernelFnObj,
@@ -280,7 +280,7 @@ namespace alpaka
                 typename TDim,
                 typename TIdx>
             struct PltfType<
-                acc::AccCpuOacc<TDim, TIdx>>
+                acc::AccOacc<TDim, TIdx>>
             {
                 using type = pltf::PltfOacc;
             };
@@ -296,7 +296,7 @@ namespace alpaka
                 typename TDim,
                 typename TIdx>
             struct IdxType<
-                acc::AccCpuOacc<TDim, TIdx>>
+                acc::AccOacc<TDim, TIdx>>
             {
                 using type = TIdx;
             };
