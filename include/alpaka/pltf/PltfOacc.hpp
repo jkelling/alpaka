@@ -27,7 +27,7 @@ namespace alpaka
     namespace pltf
     {
         //#############################################################################
-        //! The CPU device platform.
+        //! The OpenAcc device platform.
         class PltfOacc :
             public concepts::Implements<ConceptPltf, PltfOacc>
         {
@@ -42,7 +42,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU device device type trait specialization.
+            //! The OpenAcc device device type trait specialization.
             template<>
             struct DevType<
                 pltf::PltfOacc>
@@ -56,7 +56,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU platform device count get trait specialization.
+            //! The OpenACC platform device count get trait specialization.
             template<>
             struct GetDevCount<
                 pltf::PltfOacc>
@@ -72,7 +72,7 @@ namespace alpaka
             };
 
             //#############################################################################
-            //! The CPU platform device get trait specialization.
+            //! The OpenACC platform device get trait specialization.
             template<>
             struct GetDevByIdx<
                 pltf::PltfOacc>
