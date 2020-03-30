@@ -23,7 +23,8 @@
 #include <alpaka/idx/Traits.hpp>
 
 // Implementation details.
-#include <alpaka/acc/AccCpuOacc.hpp>
+#include <alpaka/ctx/block/CtxBlockOacc.hpp>
+#include <alpaka/ctx/thread/CtxThreadOacc.hpp>
 #include <alpaka/dev/DevCpu.hpp>
 #include <alpaka/idx/MapIdx.hpp>
 #include <alpaka/kernel/Traits.hpp>
@@ -156,10 +157,7 @@ namespace alpaka
                                 // error: gridBlockExtent referenced in target region does not have a mappable type
                                 auto const gridBlockExtent2(
                                     workdiv::getWorkDiv<Grid, Blocks>(*static_cast<workdiv::WorkDivMembers<TDim, TIdx> const *>(this)));
-                                acc::AccCpuOacc<TDim, TIdx> acc(
-                                    gridBlockExtent,
-                                    blockThreadExtent,
-                                    threadElemExtent,
+                                ctx::CtxBlockOacc<TDim, TIdx> blockShared(
                                     b,
                                     blockSharedMemDynSizeBytes);
 
@@ -174,14 +172,13 @@ namespace alpaka
                                 for(TIdx w = 0; w < blockThreadCount; ++w)
                                 {
                                     // blockThreadIdx[0] = w;
-                                    auto wacc = typename acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx>(
-                                            acc,
-                                            w
-                                            // idx::mapIdx<TDim::value>(
-                                            //     blockThreadIdx,
-                                            //     workdiv::getWorkDiv<Block, Threads>(
-                                            //         *static_cast<workdiv::WorkDivMembers<TDim, TIdx> const *>(this)))
-                                        );
+                                    ctx::CtxThreadOacc<TDim, TIdx> acc(
+                                        gridBlockExtent,
+                                        blockThreadExtent,
+                                        threadElemExtent,
+                                        w,
+                                        blockShared);
+
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL && 0
                                     // The first thread does some checks in the first block executed.
                                     if((::omp_get_thread_num() == 0) && (b == 0))
@@ -207,9 +204,7 @@ namespace alpaka
                                     // This is done by default if the omp 'nowait' clause is missing
                                     //block::sync::syncBlockThreads(acc);
                                 }
-
-                                // After a block has been processed, the shared memory has to be deleted.
-                                block::shared::st::freeMem(acc);
+                                block::shared::st::freeMem(blockShared);
                             }
                         }
                     }

@@ -75,9 +75,8 @@ namespace alpaka
         template<
             typename TDim,
             typename TIdx>
-        class AccCpuOacc final :
+        class AccCpuOacc :
             public workdiv::WorkDivOaccBuiltIn<TDim, TIdx>,
-            public idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>,
             public idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>,
             public atomic::AtomicHierarchy<
                 atomic::AtomicOaccBuiltIn,    // grid atomics
@@ -85,42 +84,34 @@ namespace alpaka
                 atomic::AtomicOaccBuiltIn     // thread atomics
             >,
             public math::MathStdLib,
-            public block::shared::dyn::BlockSharedMemDynOacc,
-            public block::shared::st::BlockSharedMemStOacc<AccCpuOacc<TDim, TIdx>>,
-            public block::sync::BlockSyncBarrierOacc,
             public rand::RandStdLib,
             public time::TimeStdLib,
+            public idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>, // dummy
+            public block::shared::dyn::BlockSharedMemDynOacc, // dummy
+            public block::shared::st::BlockSharedMemStOacc, // dummy
+            public block::sync::BlockSyncBarrierOacc, // dummy
             public concepts::Implements<ConceptAcc, AccCpuOacc<TDim, TIdx>>
         {
-        public:
-            // Partial specialization with the correct TDim and TIdx is not allowed.
-            template<
-                typename TDim2,
-                typename TIdx2,
-                typename TKernelFnObj,
-                typename... TArgs>
-            friend class ::alpaka::kernel::TaskKernelCpuOacc;
 
-        private:
+        protected:
             //-----------------------------------------------------------------------------
             AccCpuOacc(
                 vec::Vec<TDim, TIdx> const & gridBlockExtent,
                 vec::Vec<TDim, TIdx> const & blockThreadExtent,
                 vec::Vec<TDim, TIdx> const & threadElemExtent,
-                TIdx const & gridBlockIdx,
-                TIdx const & blockSharedMemDynSizeBytes) :
+                TIdx const & blockThreadIdx) :
                     workdiv::WorkDivOaccBuiltIn<TDim, TIdx>(threadElemExtent, blockThreadExtent, gridBlockExtent),
-                    idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>(gridBlockIdx),
-                    idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>(),
+                    idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>(),
+                    idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>(blockThreadIdx),
                     atomic::AtomicHierarchy<
                         atomic::AtomicOaccBuiltIn,    // grid atomics
                         atomic::AtomicOaccBuiltIn,    // block atomics
                         atomic::AtomicOaccBuiltIn     // thread atomics
                     >(),
                     math::MathStdLib(),
-                    block::shared::dyn::BlockSharedMemDynOacc(static_cast<std::size_t>(blockSharedMemDynSizeBytes)),
+                    block::shared::dyn::BlockSharedMemDynOacc(),
                     //! \TODO can with some TMP determine the amount of statically alloced smem from the kernelFuncObj?
-                    block::shared::st::BlockSharedMemStOacc<AccCpuOacc<TDim, TIdx>>(staticMemBegin()),
+                    block::shared::st::BlockSharedMemStOacc(),
                     block::sync::BlockSyncBarrierOacc(),
                     rand::RandStdLib(),
                     time::TimeStdLib()
@@ -309,151 +300,6 @@ namespace alpaka
             {
                 using type = TIdx;
             };
-        }
-    }
-
-    namespace acc
-    {
-        namespace oacc
-        {
-            namespace detail
-            {
-                template<
-                    typename TDim,
-                    typename TIdx>
-                struct AccCpuOaccWorker
-                {
-                    acc::AccCpuOacc<TDim, TIdx>& m_acc;
-                    const TIdx m_blockThreadIdx;
-
-                        operator acc::AccCpuOacc<TDim, TIdx>& () {return m_acc;}
-                        operator acc::AccCpuOacc<TDim, TIdx> const & () const {return m_acc;}
-
-                        AccCpuOaccWorker(acc::AccCpuOacc<TDim, TIdx>& acc, const TIdx& wIdx) :
-                            m_acc(acc),
-                            m_blockThreadIdx(wIdx)
-                    {}
-                };
-            }
-        }
-    }
-
-    namespace idx
-    {
-        namespace traits
-        {
-            //#############################################################################
-            //! The OpenACC accelerator block thread index get trait specialization.
-            template<
-                typename TDim,
-                typename TIdx>
-            struct GetIdx<
-                acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx>,
-                origin::Block,
-                unit::Threads>
-            {
-                //-----------------------------------------------------------------------------
-                //! \return The index of the current thread in the block.
-                template<
-                    typename TWorkDiv>
-                static auto getIdx(
-                    acc::oacc::detail::AccCpuOaccWorker<TDim, TIdx> const &idx,
-                    TWorkDiv const & workDiv)
-                -> vec::Vec<TDim, TIdx>
-                {
-                    return idx::mapIdx<TDim::value>(
-                        vec::Vec<dim::DimInt<1u>, TIdx>(idx.m_blockThreadIdx),
-                        workdiv::getWorkDiv<Block, Threads>(workDiv));
-                }
-            };
-
-            template<
-                typename TIdx>
-            struct GetIdx<
-                acc::oacc::detail::AccCpuOaccWorker<dim::DimInt<1u>, TIdx>,
-                origin::Block,
-                unit::Threads>
-            {
-                //-----------------------------------------------------------------------------
-                //! \return The index of the current thread in the block.
-                template<
-                    typename TWorkDiv>
-                static auto getIdx(
-                    acc::oacc::detail::AccCpuOaccWorker<dim::DimInt<1u>, TIdx> const & idx,
-                    TWorkDiv const &)
-                -> vec::Vec<dim::DimInt<1u>, TIdx>
-                {
-                    return idx.m_blockThreadIdx;
-                }
-            };
-        }
-    }
-
-    namespace block
-    {
-        namespace sync
-        {
-            namespace traits
-            {
-                //#############################################################################
-                template<
-                    typename TDim,
-                    typename TIdx>
-                struct SyncBlockThreads<
-                    acc::AccCpuOacc<TDim, TIdx>>
-                {
-                    //-----------------------------------------------------------------------------
-                    //! Execute op with single thread (any idx, last thread to
-                    //! arrive at barrier executes) syncing before and after
-                    template<
-                        typename TOp>
-                    ALPAKA_FN_HOST static auto masterOpBlockThreads(
-                        acc::AccCpuOacc<TDim, TIdx> const & acc,
-                        TOp &&op = [](){})
-                    -> void
-                    {
-                        const auto slot = (acc.m_generation&1)<<1;
-                        const int workerNum = static_cast<int>(workdiv::getWorkDiv<Block, Threads>(acc).prod());
-                        int sum;
-                        #pragma acc atomic capture
-                        {
-                            ++acc.m_syncCounter[slot];
-                            sum = acc.m_syncCounter[slot];
-                        }
-                        if(sum == workerNum)
-                        {
-                            ++acc.m_generation;
-                            const int nextSlot = (acc.m_generation&1)<<1;
-                            acc.m_syncCounter[nextSlot] = 0;
-                            acc.m_syncCounter[nextSlot+1] = 0;
-                            op();
-                        }
-                        while(sum < workerNum)
-                        {
-                            #pragma acc atomic read
-                            sum = acc.m_syncCounter[slot];
-                        }
-                        #pragma acc atomic capture
-                        {
-                            ++acc.m_syncCounter[slot];
-                            sum = acc.m_syncCounter[slot];
-                        }
-                        while(sum < workerNum)
-                        {
-                            #pragma acc atomic read
-                            sum = acc.m_syncCounter[slot+1];
-                        }
-                    }
-
-                    //-----------------------------------------------------------------------------
-                    ALPAKA_FN_HOST static auto syncBlockThreads(
-                        acc::AccCpuOacc<TDim, TIdx> const & acc)
-                    -> void
-                    {
-                        masterOpBlockThreads<>();
-                    }
-                };
-            }
         }
     }
 }
