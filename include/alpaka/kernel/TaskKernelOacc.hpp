@@ -25,7 +25,7 @@
 // Implementation details.
 #include <alpaka/ctx/block/CtxBlockOacc.hpp>
 #include <alpaka/ctx/thread/CtxThreadOacc.hpp>
-#include <alpaka/dev/DevCpu.hpp>
+#include <alpaka/dev/DevOacc.hpp>
 #include <alpaka/idx/MapIdx.hpp>
 #include <alpaka/kernel/Traits.hpp>
 #include <alpaka/workdiv/WorkDivMembers.hpp>
@@ -54,14 +54,14 @@ namespace alpaka
             typename TIdx,
             typename TKernelFnObj,
             typename... TArgs>
-        class TaskKernelCpuOacc final :
+        class TaskKernelOacc final :
             public workdiv::WorkDivMembers<TDim, TIdx>
         {
         public:
             //-----------------------------------------------------------------------------
             template<
                 typename TWorkDiv>
-            ALPAKA_FN_HOST TaskKernelCpuOacc(
+            ALPAKA_FN_HOST TaskKernelOacc(
                 TWorkDiv && workDiv,
                 TKernelFnObj const & kernelFnObj,
                 TArgs && ... args) :
@@ -74,15 +74,15 @@ namespace alpaka
                     "The work division and the execution task have to be of the same dimensionality!");
             }
             //-----------------------------------------------------------------------------
-            TaskKernelCpuOacc(TaskKernelCpuOacc const & other) = default;
+            TaskKernelOacc(TaskKernelOacc const & other) = default;
             //-----------------------------------------------------------------------------
-            TaskKernelCpuOacc(TaskKernelCpuOacc && other) = default;
+            TaskKernelOacc(TaskKernelOacc && other) = default;
             //-----------------------------------------------------------------------------
-            auto operator=(TaskKernelCpuOacc const &) -> TaskKernelCpuOacc & = default;
+            auto operator=(TaskKernelOacc const &) -> TaskKernelOacc & = default;
             //-----------------------------------------------------------------------------
-            auto operator=(TaskKernelCpuOacc &&) -> TaskKernelCpuOacc & = default;
+            auto operator=(TaskKernelOacc &&) -> TaskKernelOacc & = default;
             //-----------------------------------------------------------------------------
-            ~TaskKernelCpuOacc() = default;
+            ~TaskKernelOacc() = default;
 
             //-----------------------------------------------------------------------------
             //! Executes the kernel function object.
@@ -112,7 +112,7 @@ namespace alpaka
                         {
                             return
                                 kernel::getBlockSharedMemDynSizeBytes<
-                                    acc::AccCpuOacc<TDim, TIdx>>(
+                                    acc::AccOacc<TDim, TIdx>>(
                                         m_kernelFnObj,
                                         blockThreadExtent,
                                         threadElemExtent,
@@ -229,9 +229,9 @@ namespace alpaka
                 typename TKernelFnObj,
                 typename... TArgs>
             struct AccType<
-                kernel::TaskKernelCpuOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
+                kernel::TaskKernelOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
             {
-                using type = acc::AccCpuOacc<TDim, TIdx>;
+                using type = acc::AccOacc<TDim, TIdx>;
             };
         }
     }
@@ -247,9 +247,9 @@ namespace alpaka
                 typename TKernelFnObj,
                 typename... TArgs>
             struct DevType<
-                kernel::TaskKernelCpuOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
+                kernel::TaskKernelOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
             {
-                using type = dev::DevCpu;
+                using type = dev::DevOacc;
             };
         }
     }
@@ -265,7 +265,7 @@ namespace alpaka
                 typename TKernelFnObj,
                 typename... TArgs>
             struct DimType<
-                kernel::TaskKernelCpuOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
+                kernel::TaskKernelOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
             {
                 using type = TDim;
             };
@@ -283,9 +283,9 @@ namespace alpaka
                 typename TKernelFnObj,
                 typename... TArgs>
             struct PltfType<
-                kernel::TaskKernelCpuOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
+                kernel::TaskKernelOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
             {
-                using type = pltf::PltfCpu;
+                using type = pltf::PltfOacc;
             };
         }
     }
@@ -301,7 +301,7 @@ namespace alpaka
                 typename TKernelFnObj,
                 typename... TArgs>
             struct IdxType<
-                kernel::TaskKernelCpuOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
+                kernel::TaskKernelOacc<TDim, TIdx, TKernelFnObj, TArgs...>>
             {
                 using type = TIdx;
             };
@@ -319,11 +319,11 @@ namespace alpaka
                 typename... TArgs>
             struct Enqueue<
                 queue::QueueOaccBlocking,
-                kernel::TaskKernelCpuOacc<TDim, TIdx, TKernelFnObj, TArgs...> >
+                kernel::TaskKernelOacc<TDim, TIdx, TKernelFnObj, TArgs...> >
             {
                 ALPAKA_FN_HOST static auto enqueue(
                     queue::QueueOaccBlocking& queue,
-                    kernel::TaskKernelCpuOacc<TDim, TIdx, TKernelFnObj, TArgs...> const & task)
+                    kernel::TaskKernelOacc<TDim, TIdx, TKernelFnObj, TArgs...> const & task)
                 -> void
                 {
                     std::lock_guard<std::mutex> lk(queue.m_spQueueImpl->m_mutex);
@@ -345,12 +345,12 @@ namespace alpaka
                 typename... TArgs>
             struct Enqueue<
                 queue::QueueOaccNonBlocking,
-                kernel::TaskKernelCpuOacc<TDim, TIdx, TKernelFnObj, TArgs...> >
+                kernel::TaskKernelOacc<TDim, TIdx, TKernelFnObj, TArgs...> >
             {
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST static auto enqueue(
                     queue::QueueOaccNonBlocking& queue,
-                    kernel::TaskKernelCpuOacc<TDim, TIdx, TKernelFnObj, TArgs...> const & task)
+                    kernel::TaskKernelOacc<TDim, TIdx, TKernelFnObj, TArgs...> const & task)
                 -> void
                 {
                     queue.m_spQueueImpl->m_workerThread.enqueueTask(

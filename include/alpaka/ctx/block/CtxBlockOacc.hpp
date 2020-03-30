@@ -49,7 +49,7 @@ namespace alpaka
                 typename TIdx2,
                 typename TKernelFnObj,
                 typename... TArgs>
-            friend class ::alpaka::kernel::TaskKernelCpuOacc;
+            friend class ::alpaka::kernel::TaskKernelOacc;
 
         protected:
             //-----------------------------------------------------------------------------
