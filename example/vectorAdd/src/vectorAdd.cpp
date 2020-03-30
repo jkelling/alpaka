@@ -76,6 +76,8 @@ public:
 template<class A, class B>
 #if defined(ALPAKA_ACC_ANY_BT_OMP5_ENABLED)
 using DefaultAcc = alpaka::acc::AccOmp5<A,B>;
+#elif defined(ALPAKA_ACC_ANY_BT_OACC_ENABLED)
+using DefaultAcc = alpaka::acc::AccCpuOacc<A,B>;
 #elif defined(ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED)
 using DefaultAcc = alpaka::acc::AccCpuOmp2Blocks<A,B>;
 #elif defined(ALPAKA_ACC_CPU_B_SEQ_T_FIBERS_ENABLED)
