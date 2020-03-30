@@ -11,13 +11,6 @@
 
 #ifdef _OPENACC
 
-#include <alpaka/acc/AccCpuOacc.hpp>
-
-#include <alpaka/block/sync/Traits.hpp>
-
-#include <alpaka/core/Common.hpp>
-#include <alpaka/core/Unused.hpp>
-
 namespace alpaka
 {
     namespace block
@@ -26,7 +19,7 @@ namespace alpaka
         {
             //#############################################################################
             //! The OpenACC barrier block synchronization.
-            //! Traits are specialized on acc::oacc::detail::AccCpuOaccWorker
+            //! Traits are specialized on BlockSyncBarrierOaccBlockShared
             class BlockSyncBarrierOacc : public concepts::Implements<ConceptBlockSync, BlockSyncBarrierOacc>
             {
             public:
@@ -44,10 +37,27 @@ namespace alpaka
                 //-----------------------------------------------------------------------------
                 /*virtual*/ ~BlockSyncBarrierOacc() = default;
 
-                std::uint8_t mutable m_generation = 0u;
-                int mutable m_syncCounter[4] {0,0,0,0};
-            };
+                class BlockShared : public concepts::Implements<ConceptBlockSync, BlockShared>
+                {
+                    public:
+                        //-----------------------------------------------------------------------------
+                        ALPAKA_FN_HOST BlockShared()
+                        {}
+                        //-----------------------------------------------------------------------------
+                        ALPAKA_FN_HOST BlockShared(BlockShared const &) = delete;
+                        //-----------------------------------------------------------------------------
+                        ALPAKA_FN_HOST BlockShared(BlockShared &&) = delete;
+                        //-----------------------------------------------------------------------------
+                        ALPAKA_FN_HOST auto operator=(BlockShared const &) -> BlockShared & = delete;
+                        //-----------------------------------------------------------------------------
+                        ALPAKA_FN_HOST auto operator=(BlockShared &&) -> BlockShared & = delete;
+                        //-----------------------------------------------------------------------------
+                        /*virtual*/ ~BlockShared() = default;
 
+                        std::uint8_t mutable m_generation = 0u;
+                        int mutable m_syncCounter[4] {0,0,0,0};
+                };
+            };
         }
     }
 }
