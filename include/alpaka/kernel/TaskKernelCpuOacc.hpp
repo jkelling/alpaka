@@ -152,11 +152,11 @@ namespace alpaka
                             #pragma acc loop gang
                             for(TIdx b = t; b<bsup; ++b)
                             {
-                                vec::Vec<dim::DimInt<1u>, TIdx> const gridBlockIdx(b);
+                                // vec::Vec<dim::DimInt<1u>, TIdx> const gridBlockIdx(b);
                                 // When this is not repeated here:
                                 // error: gridBlockExtent referenced in target region does not have a mappable type
-                                auto const gridBlockExtent2(
-                                    workdiv::getWorkDiv<Grid, Blocks>(*static_cast<workdiv::WorkDivMembers<TDim, TIdx> const *>(this)));
+                                // auto const gridBlockExtent2(
+                                //     workdiv::getWorkDiv<Grid, Blocks>(*static_cast<workdiv::WorkDivMembers<TDim, TIdx> const *>(this)));
                                 ctx::CtxBlockOacc<TDim, TIdx> blockShared(
                                     b,
                                     blockSharedMemDynSizeBytes);
@@ -173,9 +173,9 @@ namespace alpaka
                                 {
                                     // blockThreadIdx[0] = w;
                                     ctx::CtxThreadOacc<TDim, TIdx> acc(
-                                        gridBlockExtent,
-                                        blockThreadExtent,
                                         threadElemExtent,
+                                        blockThreadExtent,
+                                        gridBlockExtent,
                                         w,
                                         blockShared);
 
