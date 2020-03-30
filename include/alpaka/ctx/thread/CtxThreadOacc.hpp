@@ -17,7 +17,7 @@
 
 // Base classes.
 #include <alpaka/ctx/block/CtxBlockOacc.hpp>
-#include <alpaka/acc/AccCpuOacc.hpp>
+#include <alpaka/acc/AccOacc.hpp>
 
 // Specialized traits.
 #include <alpaka/idx/Traits.hpp>
@@ -37,7 +37,7 @@ namespace alpaka
             typename TDim,
             typename TIdx>
         class CtxThreadOacc final :
-            public acc::AccCpuOacc<TDim, TIdx>
+            public acc::AccOacc<TDim, TIdx>
         {
         public:
             // Partial specialization with the correct TDim and TIdx is not allowed.
@@ -46,7 +46,7 @@ namespace alpaka
                 typename TIdx2,
                 typename TKernelFnObj,
                 typename... TArgs>
-            friend class ::alpaka::kernel::TaskKernelCpuOacc;
+            friend class ::alpaka::kernel::TaskKernelOacc;
 
         private:
             //-----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ namespace alpaka
                 vec::Vec<TDim, TIdx> const & gridBlockExtent,
                 TIdx const & blockThreadIdx,
                 ctx::CtxBlockOacc<TDim, TIdx>& blockShared) :
-                    acc::AccCpuOacc<TDim, TIdx>(threadElemExtent, blockThreadExtent, gridBlockExtent, blockThreadIdx),
+                    acc::AccOacc<TDim, TIdx>(threadElemExtent, blockThreadExtent, gridBlockExtent, blockThreadIdx),
                     m_blockShared(blockShared)
             {}
 
@@ -308,7 +308,7 @@ namespace alpaka
                     TArgs && ... args)
                 {
                     return
-                        kernel::TaskKernelCpuOacc<
+                        kernel::TaskKernelOacc<
                             TDim,
                             TIdx,
                             TKernelFnObj,

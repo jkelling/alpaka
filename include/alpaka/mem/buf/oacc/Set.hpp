@@ -16,7 +16,7 @@
 #endif
 
 #include <alpaka/dev/DevOacc.hpp>
-#include <alpaka/kernel/TaskKernelCpuOacc.hpp>
+#include <alpaka/kernel/TaskKernelOacc.hpp>
 #include <alpaka/queue/QueueOaccBlocking.hpp>
 
 #include <alpaka/core/Assert.hpp>
@@ -142,7 +142,7 @@ namespace alpaka
                         TExtent const & extent)
 #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
                     -> decltype(
-                            kernel::createTaskKernel<acc::AccCpuOacc<TDim,typename idx::traits::IdxType<TExtent>::type>>(
+                            kernel::createTaskKernel<acc::AccOacc<TDim,typename idx::traits::IdxType<TExtent>::type>>(
                                 workdiv::WorkDivMembers<TDim, typename idx::traits::IdxType<TExtent>::type>(
                                     vec::Vec<TDim, typename idx::traits::IdxType<TExtent>::type>::ones(),
                                     vec::Vec<TDim, typename idx::traits::IdxType<TExtent>::type>::ones(),
@@ -163,7 +163,7 @@ namespace alpaka
                         constexpr auto lastDim = TDim::value - 1;
 
                         if(pitch[0] <= 0)
-                            return kernel::createTaskKernel<acc::AccCpuOacc<TDim,Idx>>(
+                            return kernel::createTaskKernel<acc::AccOacc<TDim,Idx>>(
                                     workdiv::WorkDivMembers<TDim, Idx>(
                                         vec::Vec<TDim, Idx>::ones(),
                                         vec::Vec<TDim, Idx>::ones(),
@@ -180,14 +180,14 @@ namespace alpaka
                         elementsPerThread[lastDim] = 4;
                         // Let alpaka calculate good block and grid sizes given our full problem extent
                         workdiv::WorkDivMembers<TDim, Idx> const workDiv(
-                            workdiv::getValidWorkDiv<acc::AccCpuOacc<TDim,Idx>>(
+                            workdiv::getValidWorkDiv<acc::AccOacc<TDim,Idx>>(
                                 dev::getDev(view),
                                 byteExtent,
                                 elementsPerThread,
                                 false,
                                 alpaka::workdiv::GridBlockExtentSubDivRestrictions::Unrestricted));
                         return
-                            kernel::createTaskKernel<acc::AccCpuOacc<TDim,Idx>>(
+                            kernel::createTaskKernel<acc::AccOacc<TDim,Idx>>(
                                     workDiv,
                                     view::omp4::detail::MemSetKernel(),
                                     byte,
