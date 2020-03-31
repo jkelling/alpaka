@@ -51,12 +51,12 @@ namespace alpaka
         private:
             //-----------------------------------------------------------------------------
             CtxThreadOacc(
-                vec::Vec<TDim, TIdx> const & threadElemExtent,
-                vec::Vec<TDim, TIdx> const & blockThreadExtent,
                 vec::Vec<TDim, TIdx> const & gridBlockExtent,
+                vec::Vec<TDim, TIdx> const & blockThreadExtent,
+                vec::Vec<TDim, TIdx> const & threadElemExtent,
                 TIdx const & blockThreadIdx,
                 ctx::CtxBlockOacc<TDim, TIdx>& blockShared) :
-                    acc::AccOacc<TDim, TIdx>(threadElemExtent, blockThreadExtent, gridBlockExtent, blockThreadIdx),
+                    acc::AccOacc<TDim, TIdx>(gridBlockExtent, blockThreadExtent, threadElemExtent, blockThreadIdx),
                     m_blockShared(blockShared)
             {}
 
