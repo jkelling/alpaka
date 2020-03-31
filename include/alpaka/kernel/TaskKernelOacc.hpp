@@ -173,9 +173,9 @@ namespace alpaka
                                 {
                                     // blockThreadIdx[0] = w;
                                     ctx::CtxThreadOacc<TDim, TIdx> acc(
-                                        threadElemExtent,
-                                        blockThreadExtent,
                                         gridBlockExtent,
+                                        blockThreadExtent,
+                                        threadElemExtent,
                                         w,
                                         blockShared);
 
