@@ -16,11 +16,14 @@
 #endif
 
 #include <alpaka/idx/Traits.hpp>
+#include <alpaka/workdiv/Traits.hpp>
+#include <alpaka/workdiv/WorkDivMembers.hpp>
 
 #include <alpaka/vec/Vec.hpp>
 #include <alpaka/core/Positioning.hpp>
 #include <alpaka/core/Unused.hpp>
 #include <alpaka/idx/MapIdx.hpp>
+#include <alpaka/core/Concepts.hpp>
 
 namespace alpaka
 {
