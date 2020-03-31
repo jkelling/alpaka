@@ -29,6 +29,15 @@
 
 namespace alpaka
 {
+    namespace kernel
+    {
+        template<
+            typename TDim,
+            typename TIdx,
+            typename TKernelFnObj,
+            typename... TArgs>
+        class TaskKernelOacc;
+    }
     namespace ctx
     {
         //#############################################################################
