@@ -170,9 +170,9 @@ namespace alpaka
                         for(TIdx t = 0u; t < gridBlockCount; t+=teamCount)
                         {
                             acc::AccCpuOmp4<TDim, TIdx> acc(
-                                threadElemExtent,
-                                blockThreadExtent,
                                 gridBlockExtent,
+                                blockThreadExtent,
+                                threadElemExtent,
                                 t,
                                 blockSharedMemDynSizeBytes);
 
