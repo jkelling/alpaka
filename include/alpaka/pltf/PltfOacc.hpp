@@ -67,7 +67,7 @@ namespace alpaka
                 {
                     ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
-                    return static_cast<std::size_t>(::omp_get_num_devices());
+                    return static_cast<std::size_t>(::acc_get_num_devices(::acc_get_device_type()));
                 }
             };
 
@@ -80,24 +80,21 @@ namespace alpaka
                 //-----------------------------------------------------------------------------
                 //! \param devIdx device id, less than GetDevCount, will be set to omp_get_initial_device() if < 0
                 ALPAKA_FN_HOST static auto getDevByIdx(
-                    int devIdx)
+                    std::size_t devIdx)
                 -> dev::DevOacc
                 {
                     ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
-                    int const devCount(pltf::getDevCount<pltf::PltfOacc>());
+                    std::size_t const devCount(pltf::getDevCount<pltf::PltfOacc>());
                     if(devIdx >= devCount)
                     {
                         std::stringstream ssErr;
-                        ssErr << "Unable to return device handle for CPU device with index " << devIdx << " because there are only " << devCount << " devices!";
+                        ssErr << "Unable to return device handle for OpenACC device with index "
+                            << devIdx << " because there are only " << devCount << " devices!";
                         throw std::runtime_error(ssErr.str());
                     }
-                    else if(devIdx < 0)
-                    {
-                        devIdx = ::omp_get_initial_device();
-                    }
 
-                    return {devIdx};
+                    return {static_cast<int>(devIdx)};
                 }
             };
         }
