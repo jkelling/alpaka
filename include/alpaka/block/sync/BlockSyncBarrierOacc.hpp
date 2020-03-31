@@ -11,6 +11,8 @@
 
 #ifdef _OPENACC
 
+#include <alpaka/block/sync/Traits.hpp>
+
 namespace alpaka
 {
     namespace block
