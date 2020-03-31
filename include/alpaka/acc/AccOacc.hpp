@@ -16,7 +16,7 @@
 #endif
 
 // Base classes.
-#include <alpaka/workdiv/WorkDivOaccBuiltIn.hpp>
+#include <alpaka/workdiv/WorkDivMembers.hpp>
 #include <alpaka/idx/gb/IdxGbOaccBuiltIn.hpp>
 #include <alpaka/idx/bt/IdxBtOaccBuiltIn.hpp>
 #include <alpaka/atomic/AtomicOaccBuiltIn.hpp>
@@ -76,7 +76,7 @@ namespace alpaka
             typename TDim,
             typename TIdx>
         class AccOacc :
-            public workdiv::WorkDivOaccBuiltIn<TDim, TIdx>,
+            public workdiv::WorkDivMembers<TDim, TIdx>,
             public idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>,
             public atomic::AtomicHierarchy<
                 atomic::AtomicOaccBuiltIn,    // grid atomics
@@ -96,11 +96,11 @@ namespace alpaka
         protected:
             //-----------------------------------------------------------------------------
             AccOacc(
-                vec::Vec<TDim, TIdx> const & threadElemExtent,
-                vec::Vec<TDim, TIdx> const & blockThreadExtent,
                 vec::Vec<TDim, TIdx> const & gridBlockExtent,
+                vec::Vec<TDim, TIdx> const & blockThreadExtent,
+                vec::Vec<TDim, TIdx> const & threadElemExtent,
                 TIdx const & blockThreadIdx) :
-                    workdiv::WorkDivOaccBuiltIn<TDim, TIdx>(threadElemExtent, blockThreadExtent, gridBlockExtent),
+                    workdiv::WorkDivMembers<TDim, TIdx>(gridBlockExtent, blockThreadExtent, threadElemExtent),
                     idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>(),
                     idx::bt::IdxBtOaccBuiltIn<TDim, TIdx>(blockThreadIdx),
                     atomic::AtomicHierarchy<
