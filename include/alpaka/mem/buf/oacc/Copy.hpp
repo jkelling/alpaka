@@ -49,7 +49,7 @@ namespace alpaka
                             typename TTViewSrc,
                             typename TTExtent,
                             typename TTCopyPred>
-                        typename TTask,
+                        class TTask,
                         typename TDim,
                         typename TViewDst,
                         typename TViewSrc,
