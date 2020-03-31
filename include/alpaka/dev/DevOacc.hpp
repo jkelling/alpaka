@@ -59,9 +59,9 @@ namespace alpaka
                 {
                 public:
                     //-----------------------------------------------------------------------------
-                    DevOaccImpl() :
+                    DevOaccImpl(int iDevice) noexcept :
                         m_deviceType(::acc_get_device_type()),
-                        m_iDevice(::acc_get_device_num(m_deviceType))
+                        m_iDevice(iDevice)
                     {}
                     // DevOaccImpl(int iDevice) : m_iDevice(iDevice) {}
                     //-----------------------------------------------------------------------------
@@ -132,7 +132,7 @@ namespace alpaka
         protected:
             //-----------------------------------------------------------------------------
             DevOacc(int iDevice) :
-                m_spDevOaccImpl(std::make_shared<oacc::detail::DevOaccImpl>())
+                m_spDevOaccImpl(std::make_shared<oacc::detail::DevOaccImpl>(iDevice))
             {}
         public:
             //-----------------------------------------------------------------------------
