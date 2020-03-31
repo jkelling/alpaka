@@ -18,7 +18,7 @@
 #include <alpaka/idx/Traits.hpp>
 
 #include <alpaka/vec/Vec.hpp>
-#include <alpaka/workdiv/WorkDivOaccBuiltIn.hpp>
+#include <alpaka/workdiv/WorkDivMembers.hpp>
 #include <alpaka/core/Positioning.hpp>
 #include <alpaka/core/Unused.hpp>
 #include <alpaka/idx/MapIdx.hpp>
