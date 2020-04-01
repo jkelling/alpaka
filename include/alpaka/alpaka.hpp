@@ -97,6 +97,7 @@
 // event
 #include <alpaka/event/EventUniformCudaHipRt.hpp>
 #include <alpaka/event/EventCpu.hpp>
+#include <alpaka/event/EventOmp4.hpp>
 #include <alpaka/event/Traits.hpp>
 //-----------------------------------------------------------------------------
 // extent
