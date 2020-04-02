@@ -21,6 +21,7 @@
 
 // Specialized traits.
 #include <alpaka/idx/Traits.hpp>
+#include <alpaka/block/shared/dyn/Traits.hpp>
 #include <alpaka/block/shared/st/Traits.hpp>
 #include <alpaka/block/sync/Traits.hpp>
 
@@ -37,7 +38,12 @@ namespace alpaka
             typename TDim,
             typename TIdx>
         class CtxThreadOacc final :
-            public acc::AccOacc<TDim, TIdx>
+            public acc::AccOacc<TDim, TIdx>,
+            public concepts::Implements<workdiv::ConceptWorkDiv, CtxThreadOacc<TDim, TIdx>>,
+            public concepts::Implements<block::shared::dyn::ConceptBlockSharedDyn, CtxThreadOacc<TDim, TIdx>>,
+            public concepts::Implements<block::shared::st::ConceptBlockSharedSt, CtxThreadOacc<TDim, TIdx>>,
+            public concepts::Implements<block::sync::ConceptBlockSync, CtxThreadOacc<TDim, TIdx>>,
+            public concepts::Implements<idx::ConceptIdxGb, CtxThreadOacc<TDim, TIdx>>
         {
         public:
             // Partial specialization with the correct TDim and TIdx is not allowed.
@@ -51,12 +57,9 @@ namespace alpaka
         private:
             //-----------------------------------------------------------------------------
             CtxThreadOacc(
-                vec::Vec<TDim, TIdx> const & gridBlockExtent,
-                vec::Vec<TDim, TIdx> const & blockThreadExtent,
-                vec::Vec<TDim, TIdx> const & threadElemExtent,
                 TIdx const & blockThreadIdx,
                 ctx::CtxBlockOacc<TDim, TIdx>& blockShared) :
-                    acc::AccOacc<TDim, TIdx>(gridBlockExtent, blockThreadExtent, threadElemExtent, blockThreadIdx),
+                    acc::AccOacc<TDim, TIdx>(blockThreadIdx),
                     m_blockShared(blockShared)
             {}
 
@@ -179,7 +182,23 @@ namespace alpaka
                             ctx::CtxThreadOacc<TDim, TIdx> const &smem)
                         -> T &
                         {
-                            return smem.m_blockShared.template alloc<T>();
+                            return alpaka::block::shared::st::allocVar<T, TuniqueId>(smem.m_blockShared);
+                        }
+                    };
+
+                    //#############################################################################
+                    template<
+                        typename TDim,
+                        typename TIdx>
+                    struct FreeMem<
+                        ctx::CtxThreadOacc<TDim, TIdx>>
+                    {
+                        //-----------------------------------------------------------------------------
+                        static auto freeMem(
+                            ctx::CtxThreadOacc<TDim, TIdx> const & smem)
+                        -> void
+                        {
+                            alpaka::block::shared::st::freeMem(smem.m_blockShared);
                         }
                     };
                 }
@@ -204,40 +223,10 @@ namespace alpaka
                         typename TOp>
                     ALPAKA_FN_HOST static auto masterOpBlockThreads(
                         ctx::CtxThreadOacc<TDim, TIdx> const & acc,
-                        TOp &&op = [](){})
+                        TOp &&op)
                     -> void
                     {
-                        const auto slot = (acc.m_generation&1)<<1;
-                        const int workerNum = static_cast<int>(workdiv::getWorkDiv<Block, Threads>(acc).prod());
-                        int sum;
-                        #pragma acc atomic capture
-                        {
-                            ++acc.m_blockShared.m_syncCounter[slot];
-                            sum = acc.m_blockShared.m_syncCounter[slot];
-                        }
-                        if(sum == workerNum)
-                        {
-                            ++acc.m_blockShared.m_generation;
-                            const int nextSlot = (acc.m_blockShared.m_generation&1)<<1;
-                            acc.m_blockShared.m_syncCounter[nextSlot] = 0;
-                            acc.m_blockShared.m_syncCounter[nextSlot+1] = 0;
-                            op();
-                        }
-                        while(sum < workerNum)
-                        {
-                            #pragma acc atomic read
-                            sum = acc.m_blockShared.m_syncCounter[slot];
-                        }
-                        #pragma acc atomic capture
-                        {
-                            ++acc.m_syncCounter[slot];
-                            sum = acc.m_blockShared.m_syncCounter[slot];
-                        }
-                        while(sum < workerNum)
-                        {
-                            #pragma acc atomic read
-                            sum = acc.m_blockShared.m_syncCounter[slot+1];
-                        }
+                        SyncBlockThreads<ctx::CtxBlockOacc<TDim, TIdx>>::masterOpBlockThreads(acc.m_blockShared, op);
                     }
 
                     //-----------------------------------------------------------------------------
@@ -245,7 +234,7 @@ namespace alpaka
                         ctx::CtxThreadOacc<TDim, TIdx> const & acc)
                     -> void
                     {
-                        masterOpBlockThreads<>(acc);
+                        SyncBlockThreads<ctx::CtxBlockOacc<TDim, TIdx>>::syncBlockThreads(acc.m_blockShared);
                     }
                 };
             }
@@ -272,7 +261,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenACC accelerator dimension getter trait specialization.
+            //! The OpenACC accelerator dimension getter trait specialization.
             template<
                 typename TDim,
                 typename TIdx>
@@ -288,7 +277,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenACC accelerator execution task type trait specialization.
+            //! The OpenACC accelerator execution task type trait specialization.
             template<
                 typename TDim,
                 typename TIdx,
@@ -349,6 +338,83 @@ namespace alpaka
                 ctx::CtxThreadOacc<TDim, TIdx>>
             {
                 using type = TIdx;
+            };
+        }
+    }
+    namespace workdiv
+    {
+        namespace traits
+        {
+            //#############################################################################
+            //! The ctx::CtxThreadsOacc grid block extent trait specialization.
+            template<
+                typename TDim,
+                typename TIdx>
+            struct GetWorkDiv<
+                ctx::CtxThreadOacc<TDim, TIdx>,
+                origin::Grid,
+                unit::Blocks>
+            {
+                //-----------------------------------------------------------------------------
+                //! \return The number of blocks in each dimension of the grid.
+                ALPAKA_NO_HOST_ACC_WARNING
+                ALPAKA_FN_HOST_ACC static auto getWorkDiv(
+                    ctx::CtxThreadOacc<TDim, TIdx> const & workDiv)
+                -> vec::Vec<TDim, TIdx>
+                {
+                    return GetWorkDiv<
+                        WorkDivMembers<TDim, TIdx>,
+                        origin::Grid,
+                        unit::Blocks>::getWorkDiv(workDiv.m_blockShared);
+                }
+            };
+
+            //#############################################################################
+            //! The ctx::CtxThreadOacc block thread extent trait specialization.
+            template<
+                typename TDim,
+                typename TIdx>
+            struct GetWorkDiv<
+                ctx::CtxThreadOacc<TDim, TIdx>,
+                origin::Block,
+                unit::Threads>
+            {
+                //-----------------------------------------------------------------------------
+                //! \return The number of threads in each dimension of a block.
+                ALPAKA_NO_HOST_ACC_WARNING
+                ALPAKA_FN_HOST_ACC static auto getWorkDiv(
+                    ctx::CtxThreadOacc<TDim, TIdx> const & workDiv)
+                -> vec::Vec<TDim, TIdx>
+                {
+                    return GetWorkDiv<
+                        WorkDivMembers<TDim, TIdx>,
+                        origin::Block,
+                        unit::Threads>::getWorkDiv(workDiv.m_blockShared);
+                }
+            };
+
+            //#############################################################################
+            //! The ctx::CtxThreadOacc thread element extent trait specialization.
+            template<
+                typename TDim,
+                typename TIdx>
+            struct GetWorkDiv<
+                ctx::CtxThreadOacc<TDim, TIdx>,
+                origin::Thread,
+                unit::Elems>
+            {
+                //-----------------------------------------------------------------------------
+                //! \return The number of elements in each dimension of a thread.
+                ALPAKA_NO_HOST_ACC_WARNING
+                ALPAKA_FN_HOST_ACC static auto getWorkDiv(
+                    ctx::CtxThreadOacc<TDim, TIdx> const & workDiv)
+                -> vec::Vec<TDim, TIdx>
+                {
+                    return GetWorkDiv<
+                        WorkDivMembers<TDim, TIdx>,
+                        origin::Thread,
+                        unit::Elems>::getWorkDiv(workDiv.m_blockShared);
+                }
             };
         }
     }
