@@ -22,7 +22,7 @@ namespace alpaka
             //#############################################################################
             //! The OpenACC barrier block synchronization.
             //! Traits are specialized on BlockSyncBarrierOaccBlockShared
-            class BlockSyncBarrierOacc : public concepts::Implements<ConceptBlockSync, BlockSyncBarrierOacc>
+            class BlockSyncBarrierOacc
             {
             public:
                 //-----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ namespace alpaka
                 //-----------------------------------------------------------------------------
                 /*virtual*/ ~BlockSyncBarrierOacc() = default;
 
-                class BlockShared : public concepts::Implements<ConceptBlockSync, BlockShared>
+                class BlockShared : public concepts::Implements<block::sync::ConceptBlockSync, BlockShared>
                 {
                     public:
                         //-----------------------------------------------------------------------------

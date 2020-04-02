@@ -34,7 +34,7 @@ namespace alpaka
             template<
                 typename TDim,
                 typename TIdx>
-            class IdxGbOaccBuiltIn : public concepts::Implements<ConceptIdxGb, IdxGbOaccBuiltIn<TDim, TIdx>>
+            class IdxGbOaccBuiltIn
             {
             public:
                 //-----------------------------------------------------------------------------
