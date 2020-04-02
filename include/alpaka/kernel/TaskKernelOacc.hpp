@@ -158,6 +158,9 @@ namespace alpaka
                                 // auto const gridBlockExtent2(
                                 //     workdiv::getWorkDiv<Grid, Blocks>(*static_cast<workdiv::WorkDivMembers<TDim, TIdx> const *>(this)));
                                 ctx::CtxBlockOacc<TDim, TIdx> blockShared(
+                                    gridBlockExtent,
+                                    blockThreadExtent,
+                                    threadElemExtent,
                                     b,
                                     blockSharedMemDynSizeBytes);
 
@@ -173,9 +176,6 @@ namespace alpaka
                                 {
                                     // blockThreadIdx[0] = w;
                                     ctx::CtxThreadOacc<TDim, TIdx> acc(
-                                        gridBlockExtent,
-                                        blockThreadExtent,
-                                        threadElemExtent,
                                         w,
                                         blockShared);
 

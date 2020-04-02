@@ -16,6 +16,7 @@
 #endif
 
 // Base classes.
+#include <alpaka/workdiv/WorkDivMembers.hpp>
 #include <alpaka/idx/gb/IdxGbOaccBuiltIn.hpp>
 #include <alpaka/block/shared/dyn/BlockSharedMemDynOacc.hpp>
 #include <alpaka/block/shared/st/BlockSharedMemStOacc.hpp>
@@ -46,10 +47,12 @@ namespace alpaka
             typename TDim,
             typename TIdx>
         class CtxBlockOacc final :
+            public workdiv::WorkDivMembers<TDim, TIdx>,
             public idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>::BlockShared,
             public block::shared::dyn::BlockSharedMemDynOacc::BlockShared,
-            public block::shared::st::BlockSharedMemStOacc::BlockShared<CtxBlockOacc<TDim, TIdx>>,
-            public block::sync::BlockSyncBarrierOacc::BlockShared
+            public block::shared::st::BlockSharedMemStOacc::BlockShared,
+            public block::sync::BlockSyncBarrierOacc::BlockShared,
+            public concepts::Implements<block::shared::st::ConceptBlockSharedSt, CtxBlockOacc<TDim, TIdx>>
         {
         public:
             // Partial specialization with the correct TDim and TIdx is not allowed.
@@ -63,12 +66,16 @@ namespace alpaka
         protected:
             //-----------------------------------------------------------------------------
             CtxBlockOacc(
+                vec::Vec<TDim, TIdx> const & gridBlockExtent,
+                vec::Vec<TDim, TIdx> const & blockThreadExtent,
+                vec::Vec<TDim, TIdx> const & threadElemExtent,
                 TIdx const & gridBlockIdx,
                 TIdx const & blockSharedMemDynSizeBytes) :
+                    workdiv::WorkDivMembers<TDim, TIdx>(gridBlockExtent, blockThreadExtent, threadElemExtent),
                     idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>::BlockShared(gridBlockIdx),
                     block::shared::dyn::BlockSharedMemDynOacc::BlockShared(static_cast<std::size_t>(blockSharedMemDynSizeBytes)),
                     //! \TODO can with some TMP determine the amount of statically alloced smem from the kernelFuncObj?
-                    block::shared::st::BlockSharedMemStOacc::BlockShared<CtxBlockOacc<TDim, TIdx>>(staticMemBegin()),
+                    block::shared::st::BlockSharedMemStOacc::BlockShared(staticMemBegin()),
                     block::sync::BlockSyncBarrierOacc::BlockShared()
             {}
 
@@ -84,6 +91,159 @@ namespace alpaka
             //-----------------------------------------------------------------------------
             /*virtual*/ ~CtxBlockOacc() = default;
         };
+    }
+
+    namespace block
+    {
+        namespace sync
+        {
+            namespace traits
+            {
+                //#############################################################################
+                template<
+                    typename TDim,
+                    typename TIdx>
+                struct SyncBlockThreads<
+                    ctx::CtxBlockOacc<TDim, TIdx>>
+                {
+                    //-----------------------------------------------------------------------------
+                    //! Execute op with single thread (any idx, last thread to
+                    //! arrive at barrier executes) syncing before and after
+                    template<
+                        typename TOp>
+                    ALPAKA_FN_HOST static auto masterOpBlockThreads(
+                        ctx::CtxBlockOacc<TDim, TIdx> const & acc,
+                        TOp &&op)
+                    -> void
+                    {
+                        const auto slot = (acc.m_generation&1)<<1;
+                        const int workerNum = static_cast<int>(workdiv::getWorkDiv<Block, Threads>(acc).prod());
+                        int sum;
+                        #pragma acc atomic capture
+                        {
+                            ++acc.m_syncCounter[slot];
+                            sum = acc.m_syncCounter[slot];
+                        }
+                        if(sum == workerNum)
+                        {
+                            ++acc.m_generation;
+                            const int nextSlot = (acc.m_generation&1)<<1;
+                            acc.m_syncCounter[nextSlot] = 0;
+                            acc.m_syncCounter[nextSlot+1] = 0;
+                            op();
+                        }
+                        while(sum < workerNum)
+                        {
+                            #pragma acc atomic read
+                            sum = acc.m_syncCounter[slot];
+                        }
+                        #pragma acc atomic capture
+                        {
+                            ++acc.m_syncCounter[slot];
+                            sum = acc.m_syncCounter[slot];
+                        }
+                        while(sum < workerNum)
+                        {
+                            #pragma acc atomic read
+                            sum = acc.m_syncCounter[slot+1];
+                        }
+                    }
+
+                    //-----------------------------------------------------------------------------
+                    ALPAKA_FN_HOST static auto syncBlockThreads(
+                        ctx::CtxBlockOacc<TDim, TIdx> const & acc)
+                    -> void
+                    {
+                        masterOpBlockThreads<>(acc, [](){});
+                    }
+                };
+            }
+        }
+    }
+    namespace dim
+    {
+        namespace traits
+        {
+            //#############################################################################
+            //! The OpenACC accelerator dimension getter trait specialization.
+            template<
+                typename TDim,
+                typename TIdx>
+            struct DimType<
+                ctx::CtxBlockOacc<TDim, TIdx>>
+            {
+                using type = TDim;
+            };
+        }
+    }
+    namespace idx
+    {
+        namespace traits
+        {
+            //#############################################################################
+            //! The OpenACC accelerator idx type trait specialization.
+            template<
+                typename TDim,
+                typename TIdx>
+            struct IdxType<
+                ctx::CtxBlockOacc<TDim, TIdx>>
+            {
+                using type = TIdx;
+            };
+        }
+    }
+    namespace block
+    {
+        namespace shared
+        {
+            namespace st
+            {
+                namespace traits
+                {
+                    //#############################################################################
+                    template<
+                        typename T,
+                        typename TDim,
+                        typename TIdx,
+                        std::size_t TuniqueId>
+                    struct AllocVar<
+                        T,
+                        TuniqueId,
+                        ctx::CtxBlockOacc<TDim, TIdx>>
+                    {
+                        //-----------------------------------------------------------------------------
+                        static auto allocVar(
+                            ctx::CtxBlockOacc<TDim, TIdx> const &smem)
+                        -> T &
+                        {
+                           block::sync::traits::SyncBlockThreads<ctx::CtxBlockOacc<TDim, TIdx>>::masterOpBlockThreads(
+                               smem,
+                               [&smem](){
+                                   smem.template alloc<T>();
+                                   }
+                               );
+                           return smem.template getLatestVar<T>();
+                        }
+                    };
+
+                    //#############################################################################
+                    template<
+                        typename TDim,
+                        typename TIdx>
+                    struct FreeMem<
+                        ctx::CtxBlockOacc<TDim, TIdx>>
+                    {
+                        //-----------------------------------------------------------------------------
+                        static auto freeMem(
+                            ctx::CtxBlockOacc<TDim, TIdx> const &)
+                        -> void
+                        {
+                            // Nothing to do. Block shared memory is automatically freed when all threads left the block.
+                        }
+                    };
+                }
+            }
+        }
     }
 }
 
