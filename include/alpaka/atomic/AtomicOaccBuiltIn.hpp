@@ -226,6 +226,157 @@ namespace alpaka
                     return old;
                 }
             };
+
+            //#############################################################################
+            //! The OpenACC accelerators atomic operation: Min
+            template<
+                typename T,
+                typename THierarchy>
+            struct AtomicOp<
+                op::Min,
+                atomic::AtomicOaccBuiltIn,
+                T,
+                THierarchy>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST_ACC static auto atomicOp(
+                    atomic::AtomicOaccBuiltIn const &,
+                    T * const addr,
+                    T const & value)
+                -> T
+                {
+                    T old;
+                    auto & ref(*addr);
+                    // atomically update ref, but capture the original value in old
+                    #pragma acc atomic capture
+                    {
+                        old = ref;
+                        ref = (old <= value) ? old : value;
+                    }
+                    return old;
+                }
+            };
+
+            //#############################################################################
+            //! The OpenACC accelerators atomic operation: Max
+            template<
+                typename T,
+                typename THierarchy>
+            struct AtomicOp<
+                op::Max,
+                atomic::AtomicOaccBuiltIn,
+                T,
+                THierarchy>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST_ACC static auto atomicOp(
+                    atomic::AtomicOaccBuiltIn const &,
+                    T * const addr,
+                    T const & value)
+                -> T
+                {
+                    T old;
+                    auto & ref(*addr);
+                    // atomically update ref, but capture the original value in old
+                    #pragma acc atomic capture
+                    {
+                        old = ref;
+                        ref = (old >= value) ? old : value;
+                    }
+                    return old;
+                }
+            };
+
+            //#############################################################################
+            //! The OpenACC accelerators atomic operation: Inc
+            template<
+                typename T,
+                typename THierarchy>
+            struct AtomicOp<
+                op::Inc,
+                atomic::AtomicOaccBuiltIn,
+                T,
+                THierarchy>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST_ACC static auto atomicOp(
+                    atomic::AtomicOaccBuiltIn const &,
+                    T * const addr,
+                    T const & value)
+                -> T
+                {
+                    T old;
+                    auto & ref(*addr);
+                    // atomically update ref, but capture the original value in old
+                    #pragma acc atomic capture
+                    {
+                        old = ref;
+                        ++ref;
+                    }
+                    return old;
+                }
+            };
+
+            //#############################################################################
+            //! The OpenACC accelerators atomic operation: Dec
+            template<
+                typename T,
+                typename THierarchy>
+            struct AtomicOp<
+                op::Dec,
+                atomic::AtomicOaccBuiltIn,
+                T,
+                THierarchy>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST_ACC static auto atomicOp(
+                    atomic::AtomicOaccBuiltIn const &,
+                    T * const addr,
+                    T const & value)
+                -> T
+                {
+                    T old;
+                    auto & ref(*addr);
+                    // atomically update ref, but capture the original value in old
+                    #pragma acc atomic capture
+                    {
+                        old = ref;
+                        --ref;
+                    }
+                    return old;
+                }
+            };
+
+            //#############################################################################
+            //! The OpenACC accelerators atomic operation: Cas
+            template<
+                typename T,
+                typename THierarchy>
+            struct AtomicOp<
+                op::Cas,
+                atomic::AtomicOaccBuiltIn,
+                T,
+                THierarchy>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST_ACC static auto atomicOp(
+                    atomic::AtomicOaccBuiltIn const &,
+                    T * const addr,
+                    T const & compare,
+                    T const & value)
+                -> T
+                {
+                    T old;
+                    auto & ref(*addr);
+                    // atomically update ref, but capture the original value in old
+                    #pragma acc atomic capture
+                    {
+                        old = ref;
+                        ref = (old == compare ? value : old);
+                    }
+                    return old;
+                }
+            };
 // #endif
         }
     }
