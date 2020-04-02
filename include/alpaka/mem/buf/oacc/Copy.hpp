@@ -154,14 +154,14 @@ namespace alpaka
                         }
 #endif
                         const dev::DevOacc m_dev;
-                        vec::Vec<TDim, size_t> m_extent;
+                        vec::Vec<TDim, ExtentSize> m_extent;
                         ExtentSize const m_extentWidthBytes;
+                        vec::Vec<TDim, DstSize> m_dstPitchBytes;
+                        vec::Vec<TDim, SrcSize> m_srcPitchBytes;
 #if (!defined(NDEBUG)) || (ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
                         vec::Vec<TDim, DstSize> const m_dstExtent;
                         vec::Vec<TDim, SrcSize> const m_srcExtent;
 #endif
-                        vec::Vec<TDim, size_t> m_dstPitchBytes;
-                        vec::Vec<TDim, size_t> m_srcPitchBytes;
                         std::uint8_t * const m_dstMemNative;
                         std::uint8_t const * const m_srcMemNative;
                         TCopyPred m_copyPred;
@@ -211,8 +211,8 @@ namespace alpaka
                                         this->m_copyPred(
                                             reinterpret_cast<void *>(
                                                 this->m_dstMemNative + (vec::cast<DstSize>(idx) * dstPitchBytesWithoutOutmost).foldrAll(std::plus<DstSize>())),
-                                            reinterpret_cast<void *>(
-                                                this->m_srcMemNative + (vec::cast<SrcSize>(idx) * srcPitchBytesWithoutOutmost).foldrAll(std::plus<SrcSize>())),
+                                            const_cast<void*>(reinterpret_cast<const void *>(
+                                                this->m_srcMemNative + (vec::cast<SrcSize>(idx) * srcPitchBytesWithoutOutmost).foldrAll(std::plus<SrcSize>()))),
                                             static_cast<std::size_t>(this->m_extentWidthBytes));
                                     });
                             }
