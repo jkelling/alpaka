@@ -15,8 +15,6 @@
     #error If ALPAKA_ACC_ANY_BT_OACC_ENABLED is set, the compiler has to support OpenACC xx or higher!
 #endif
 
-#include <alpaka/block/shared/dyn/Traits.hpp>
-
 #include <type_traits>
 #include <array>
 
@@ -30,7 +28,7 @@ namespace alpaka
             {
                 //#############################################################################
                 //! The OpenACC block shared memory allocator.
-                class BlockSharedMemDynOacc : public concepts::Implements<ConceptBlockSharedDyn, BlockSharedMemDynOacc>
+                class BlockSharedMemDynOacc
                 {
                 public:
                     //-----------------------------------------------------------------------------
@@ -46,7 +44,7 @@ namespace alpaka
                     //-----------------------------------------------------------------------------
                     /*virtual*/ ~BlockSharedMemDynOacc() = default;
 
-                    class BlockShared : public concepts::Implements<ConceptBlockSharedDyn, BlockShared>
+                    class BlockShared
                     {
                         mutable std::array<char, 30<<10> m_mem; // ! static 30kB
                         std::size_t m_dynSize;
