@@ -119,6 +119,17 @@ namespace alpaka
                     typename TIdx>
                 using AccOmp5IfAvailableElseInt = int;
 #endif
+#if defined(ALPAKA_ACC_ANY_BT_OACC_ENABLED) && !defined(ALPAKA_CUDA_CI) && !(defined(TEST_UNIT_KERNEL_KERNEL_STD_FUNCTION))
+                template<
+                    typename TDim,
+                    typename TIdx>
+                using AccOaccIfAvailableElseInt = alpaka::acc::AccOacc<TDim, TIdx>;
+#else
+                template<
+                    typename TDim,
+                    typename TIdx>
+                using AccOaccIfAvailableElseInt = int;
+#endif
 #if (defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && BOOST_LANG_CUDA) || (defined(ALPAKA_ACC_GPU_HIP_ENABLED) && BOOST_LANG_HIP)
                 template<
                     typename TDim,
@@ -171,6 +182,7 @@ namespace alpaka
                         AccCpuOmp2BlocksIfAvailableElseInt<TDim, TIdx>,
                         AccCpuOmp2ThreadsIfAvailableElseInt<TDim, TIdx>,
                         AccOmp5IfAvailableElseInt<TDim, TIdx>,
+                        AccOaccIfAvailableElseInt<TDim, TIdx>,
                         AccGpuUniformCudaHipRtIfAvailableElseInt<TDim, TIdx>,
                         AccGpuCudaRtIfAvailableElseInt<TDim, TIdx>,
                         AccGpuHipRtIfAvailableElseInt<TDim, TIdx>
