@@ -237,6 +237,29 @@ namespace alpaka
                         SyncBlockThreads<ctx::CtxBlockOacc<TDim, TIdx>>::syncBlockThreads(acc.m_blockShared);
                     }
                 };
+
+                //#############################################################################
+                template<
+                    typename TOp,
+                    typename TDim,
+                    typename TIdx>
+                struct SyncBlockThreadsPredicate<
+                    TOp,
+                    ctx::CtxThreadOacc<TDim, TIdx>>
+                {
+                    //-----------------------------------------------------------------------------
+                    ALPAKA_NO_HOST_ACC_WARNING
+                    ALPAKA_FN_ACC static auto syncBlockThreadsPredicate(
+                        ctx::CtxThreadOacc<TDim, TIdx> const & acc,
+                        int predicate)
+                    -> int
+                    {
+                        return SyncBlockThreadsPredicate<TOp, ctx::CtxBlockOacc<TDim, TIdx>>::syncBlockThreadsPredicate(
+                                acc.m_blockShared,
+                                predicate
+                            );
+                    }
+                };
             }
         }
     }
