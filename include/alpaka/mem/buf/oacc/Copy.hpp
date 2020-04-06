@@ -32,6 +32,10 @@
 #include <tuple>
 #include <utility>
 
+#if _OPENACC < 201510
+#include <vector>
+#endif
+
 namespace alpaka
 {
     namespace mem
@@ -339,7 +343,6 @@ namespace alpaka
                     }
                 };
 
-#if _OPENACC >= 201510
                 //#############################################################################
                 //! The Oacc to Oacc memory copy trait specialization.
                 template<
@@ -376,11 +379,20 @@ namespace alpaka
                                     viewSrc,
                                     extent,
                                     dev::getDev(viewDst),
+#if _OPENACC >= 201510
                                     acc_memcpy_device
+#else
+                                    // acc_memcpy_device is only available since OpenACC2.5
+                                    // , but we want the tests to compile anyway
+                                    [](void* dst, void* src, std::size_t size){
+                                        std::vector<std::size_t> buf(size/sizeof(std::size_t));
+                                        acc_memcpy_from_device(static_cast<void*>(buf.data()), src, size);
+                                        acc_memcpy_to_device(dst, static_cast<void*>(buf.data()), size);
+                                    }
+#endif
                                     );
                     }
                 };
-#endif
             }
         }
     }
