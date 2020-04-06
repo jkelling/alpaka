@@ -25,7 +25,8 @@
 #include <alpaka/acc/AccCpuOmp2Blocks.hpp>
 #include <alpaka/acc/AccCpuOmp2Threads.hpp>
 #include <alpaka/acc/AccOmp5.hpp>
-#include <alpaka/acc/AccOacc.hpp>
+// #include <alpaka/acc/AccOacc.hpp>
+#include <alpaka/ctx/thread/CtxThreadOacc.hpp>
 #include <alpaka/acc/AccGpuUniformCudaHipRt.hpp>
 #include <alpaka/acc/AccGpuCudaRt.hpp>
 #include <alpaka/acc/AccGpuHipRt.hpp>
@@ -122,13 +123,8 @@
 #include <alpaka/kernel/TaskKernelCpuTbbBlocks.hpp>
 #include <alpaka/kernel/TaskKernelCpuOmp2Blocks.hpp>
 #include <alpaka/kernel/TaskKernelCpuOmp2Threads.hpp>
-<<<<<<< HEAD
 #include <alpaka/kernel/TaskKernelOmp5.hpp>
-#include <alpaka/kernel/TaskKernelCpuOacc.hpp>
-=======
-#include <alpaka/kernel/TaskKernelCpuOmp4.hpp>
 #include <alpaka/kernel/TaskKernelOacc.hpp>
->>>>>>> OpenACC: Rename AccCpuOacc -> AccOacc
 #include <alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp>
 #include <alpaka/kernel/Traits.hpp>
 //-----------------------------------------------------------------------------
