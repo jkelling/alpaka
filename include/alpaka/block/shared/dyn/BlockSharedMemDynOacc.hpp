@@ -46,7 +46,7 @@ namespace alpaka
 
                     class BlockShared
                     {
-                        mutable std::array<char, 30<<10> m_mem; // ! static 30kB
+                        mutable std::array<size_t, 30<<(10-sizeof(size_t))> m_mem; // ! static 30kB
                         std::size_t m_dynSize;
 
                     public:
@@ -63,8 +63,8 @@ namespace alpaka
                         //-----------------------------------------------------------------------------
                         /*virtual*/ ~BlockShared() = default;
 
-                        char* dynMemBegin() const {return m_mem.data();}
-                        char* staticMemBegin() const {return m_mem.data()+m_dynSize;}
+                        size_t* dynMemBegin() const {return m_mem.data();}
+                        size_t* staticMemBegin() const {return m_mem.data()+m_dynSize;}
                     };
                 };
             }
