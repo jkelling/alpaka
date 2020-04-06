@@ -50,12 +50,17 @@ namespace alpaka
 
                     class BlockShared
                     {
-                        mutable unsigned int m_allocdBytes = 0;
-                        mutable char* m_mem;
+                        mutable unsigned int m_allocdWords = 0;
+                        mutable size_t* m_mem;
+                        template<typename T>
+                        static constexpr size_t alignPitch()
+                        {
+                            return sizeof(T)/sizeof(size_t) + (sizeof(T)/sizeof(size_t)>0);
+                        }
 
                         public:
 
-                        BlockShared(char* mem) : m_mem(mem) {}
+                        BlockShared(size_t* mem) : m_mem(mem) {}
                         //-----------------------------------------------------------------------------
                         BlockShared(BlockSharedMemStOacc const &) = delete;
                         //-----------------------------------------------------------------------------
@@ -70,15 +75,15 @@ namespace alpaka
                         template <typename T>
                         void alloc() const
                         {
-                            char* buf = &m_mem[m_allocdBytes];
+                            size_t* buf = &m_mem[m_allocdWords];
                             new (buf) T();
-                            m_allocdBytes += sizeof(T);
+                            m_allocdWords += alignPitch<T>();
                         }
 
                         template <typename T>
                         T& getLatestVar() const
                         {
-                           return *reinterpret_cast<T*>(&m_mem[m_allocdBytes-sizeof(T)]);
+                           return *reinterpret_cast<T*>(&m_mem[m_allocdWords-alignPitch<T>()]);
                         }
                     };
                 };
