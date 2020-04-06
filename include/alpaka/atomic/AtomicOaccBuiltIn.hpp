@@ -251,7 +251,7 @@ namespace alpaka
                     #pragma acc atomic capture
                     {
                         old = ref;
-                        ref = (old <= value) ? old : value;
+                        ref = (ref <= value) ? ref : value;
                     }
                     return old;
                 }
@@ -281,7 +281,7 @@ namespace alpaka
                     #pragma acc atomic capture
                     {
                         old = ref;
-                        ref = (old >= value) ? old : value;
+                        ref = (ref >= value) ? ref : value;
                     }
                     return old;
                 }
@@ -311,7 +311,7 @@ namespace alpaka
                     #pragma acc atomic capture
                     {
                         old = ref;
-                        ++ref;
+                        ref = ((ref >= value) ? 0 : (ref + 1));
                     }
                     return old;
                 }
@@ -341,7 +341,7 @@ namespace alpaka
                     #pragma acc atomic capture
                     {
                         old = ref;
-                        --ref;
+                        ref = ((ref == 0) || (ref > value)) ? value : (ref - 1);
                     }
                     return old;
                 }
@@ -372,7 +372,7 @@ namespace alpaka
                     #pragma acc atomic capture
                     {
                         old = ref;
-                        ref = (old == compare ? value : old);
+                        ref = (ref == compare ? value : ref);
                     }
                     return old;
                 }
