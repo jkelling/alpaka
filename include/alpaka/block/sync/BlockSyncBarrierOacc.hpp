@@ -58,6 +58,7 @@ namespace alpaka
 
                         std::uint8_t mutable m_generation = 0u;
                         int mutable m_syncCounter[4] {0,0,0,0};
+                        int mutable m_result;
                 };
             };
         }
