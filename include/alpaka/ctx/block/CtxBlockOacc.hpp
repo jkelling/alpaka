@@ -157,6 +157,83 @@ namespace alpaka
                         masterOpBlockThreads<>(acc, [](){});
                     }
                 };
+
+                namespace oacc
+                {
+                    namespace detail
+                    {
+                        //#############################################################################
+                        template<
+                            typename TOp>
+                        struct AtomicOp;
+                        //#############################################################################
+                        template<>
+                        struct AtomicOp<
+                            block::sync::op::Count>
+                        {
+                            void operator()(int& result, bool value)
+                            {
+                                #pragma acc atomic update
+                                result += static_cast<int>(value);
+                            }
+                        };
+                        //#############################################################################
+                        template<>
+                        struct AtomicOp<
+                            block::sync::op::LogicalAnd>
+                        {
+                            void operator()(int& result, bool value)
+                            {
+                                #pragma acc atomic update
+                                result &= static_cast<int>(value);
+                            }
+                        };
+                        //#############################################################################
+                        template<>
+                        struct AtomicOp<
+                            block::sync::op::LogicalOr>
+                        {
+                            void operator()(int& result, bool value)
+                            {
+                                #pragma acc atomic update
+                                result |= static_cast<int>(value);
+                            }
+                        };
+                    }
+                }
+
+                //#############################################################################
+                template<
+                    typename TOp,
+                    typename TDim,
+                    typename TIdx>
+                struct SyncBlockThreadsPredicate<
+                    TOp,
+                    ctx::CtxBlockOacc<TDim, TIdx>>
+                {
+                    //-----------------------------------------------------------------------------
+                    ALPAKA_NO_HOST_ACC_WARNING
+                    ALPAKA_FN_ACC static auto syncBlockThreadsPredicate(
+                        ctx::CtxBlockOacc<TDim, TIdx> const & blockSync,
+                        int predicate)
+                    -> int
+                    {
+                        // implicit snyc
+                        SyncBlockThreads<ctx::CtxBlockOacc<TDim, TIdx>>::masterOpBlockThreads(
+                                blockSync,
+                                [&blockSync](){blockSync.m_result = TOp::InitialValue;}
+                            );
+
+                        int& result(blockSync.m_result);
+                        bool const predicateBool(predicate != 0);
+
+                        oacc::detail::AtomicOp<TOp>()(result, predicateBool);
+
+                        SyncBlockThreads<ctx::CtxBlockOacc<TDim, TIdx>>::syncBlockThreads(blockSync);
+
+                        return blockSync.m_result;
+                    }
+                };
             }
         }
     }
