@@ -148,12 +148,12 @@ namespace alpaka
                         -> void
                         {
                             std::cout << __func__
-                                << " dev: " << m_iDevice
+                                << " dev: " << m_dev.iDevice()
                                 << " ew: " << m_extent
-                                // << " dw: " << m_dstExtent
-                                << " dptr: " << m_dstMemNative
-                                // << " sw: " << m_srcExtent
-                                << " sptr: " << m_srcMemNative
+                                << " dw: " << m_dstExtent
+                                << " dptr: " << static_cast<const void *>(m_dstMemNative)
+                                << " sw: " << m_srcExtent
+                                << " sptr: " << static_cast<const void *>(m_srcMemNative)
                                 << std::endl;
                         }
 #endif
