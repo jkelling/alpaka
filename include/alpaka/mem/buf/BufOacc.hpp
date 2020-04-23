@@ -24,7 +24,7 @@
 #include <alpaka/dim/DimIntegralConst.hpp>
 #include <alpaka/mem/buf/Traits.hpp>
 
-#include <omp.h>
+#include <openacc.h>
 
 #include <memory>
 
@@ -49,12 +49,12 @@ namespace alpaka
     {
         namespace buf
         {
-            namespace omp4
+            namespace oacc
             {
                 namespace detail
                 {
                     //#############################################################################
-                    //! The OMP4 memory buffer detail.
+                    //! The OpenACC memory buffer detail.
                     template<
                         typename TElem,
                         typename TDim,
@@ -144,7 +144,7 @@ namespace alpaka
                     dev::DevOacc const & dev,
                     TElem * const pMem,
                     TExtent const & extent) :
-                        m_spBufImpl(std::make_shared<omp4::detail::BufOaccImpl<TElem, TDim, TIdx>>(dev, pMem, extent))
+                        m_spBufImpl(std::make_shared<oacc::detail::BufOaccImpl<TElem, TDim, TIdx>>(dev, pMem, extent))
                 {}
 
                     BufOacc(const BufOacc&) = default;
@@ -152,13 +152,13 @@ namespace alpaka
                 BufOacc& operator=(const BufOacc&) = default;
                 BufOacc& operator=(BufOacc&&) = default;
 
-                omp4::detail::BufOaccImpl<TElem, TDim, TIdx>& operator*() {return *m_spBufImpl;}
-                const omp4::detail::BufOaccImpl<TElem, TDim, TIdx>& operator*() const {return *m_spBufImpl;}
+                oacc::detail::BufOaccImpl<TElem, TDim, TIdx>& operator*() {return *m_spBufImpl;}
+                const oacc::detail::BufOaccImpl<TElem, TDim, TIdx>& operator*() const {return *m_spBufImpl;}
 
                 inline const vec::Vec<TDim, TIdx>& extentElements() const {return m_spBufImpl->m_extentElements;}
 
             private:
-                std::shared_ptr<omp4::detail::BufOaccImpl<TElem, TDim, TIdx>> m_spBufImpl;
+                std::shared_ptr<oacc::detail::BufOaccImpl<TElem, TDim, TIdx>> m_spBufImpl;
             };
         }
     }
@@ -422,7 +422,8 @@ namespace alpaka
                         for (unsigned int a = 1u; a < static_cast<unsigned int>(TDim::value); ++a)
                             size *= static_cast<std::size_t>(extent[a]);
 
-                        void * memPtr = omp_target_alloc(size, dev.m_spDevOaccImpl->iDevice());
+                        dev.makeCurrent();
+                        void * memPtr = acc_malloc(size);
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
                         std::cout << __func__ << "alloc'd " << TDim::value
                             << "D device ptr: " << memPtr << " on device " << dev.m_spDevOaccImpl->iDevice()
@@ -456,7 +457,7 @@ namespace alpaka
 
                         if(dev::getDev(buf) != dev)
                         {
-                            throw std::runtime_error("Mapping memory from one OMP4 device into an other OMP4 device not implemented!");
+                            throw std::runtime_error("Mapping memory from one OpenACC device into an other OpenACC device not implemented!");
                         }
                         // If it is already the same device, nothing has to be mapped.
                     }
@@ -481,7 +482,7 @@ namespace alpaka
 
                         if(dev::getDev(buf) != dev)
                         {
-                            throw std::runtime_error("Unmapping memory mapped from one OMP4 device into an other OMP4 device not implemented!");
+                            throw std::runtime_error("Unmapping memory mapped from one OpenACC device into an other OpenACC device not implemented!");
                         }
                         // If it is already the same device, nothing has to be unmapped.
                     }
@@ -502,7 +503,7 @@ namespace alpaka
                     {
                         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
-                        // No explicit pinning in OMP4? GPU would be pinned anyway.
+                        // No explicit pinning in OpenACC? GPU would be pinned anyway.
                     }
                 };
                 //#############################################################################
@@ -521,7 +522,7 @@ namespace alpaka
                     {
                         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
-                        // No explicit pinning in OMP4? GPU would be pinned anyway.
+                        // No explicit pinning in OpenACC? GPU would be pinned anyway.
                     }
                 };
                 //#############################################################################
@@ -540,7 +541,7 @@ namespace alpaka
                     {
                         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
-                        // No explicit pinning in OMP4? GPU would be pinned anyway.
+                        // No explicit pinning in OpenACC? GPU would be pinned anyway.
                         return true;
                     }
                 };
@@ -560,7 +561,7 @@ namespace alpaka
                     {
                         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
-                        // OMP4 device memory is always ready for async copy
+                        // OpenACC device memory is always ready for async copy
                     }
                 };
             }
@@ -638,7 +639,7 @@ namespace alpaka
                         if(dev::getDev(buf) != dev) //! \TODO WTF?
                         {
                             //   Maps the allocation into the CUDA address space.The device pointer to the memory may be obtained by calling cudaHostGetDevicePointer().
-                            throw std::runtime_error("Mapping host memory to OMP4 device not implemented!");
+                            throw std::runtime_error("Mapping host memory to OpenACC device not implemented!");
                         }
                         // If it is already the same device, nothing has to be mapped.
                     }
@@ -663,7 +664,7 @@ namespace alpaka
 
                         if(dev::getDev(buf) != dev) //! \TODO WTF?
                         {
-                            throw std::runtime_error("Mapping host memory to OMP4 device not implemented!");
+                            throw std::runtime_error("Mapping host memory to OpenACC device not implemented!");
                         }
                         // If it is already the same device, nothing has to be unmapped.
                     }
@@ -690,7 +691,7 @@ namespace alpaka
                         dev::DevOacc const &)
                     -> TElem const *
                     {
-                        throw std::runtime_error("Mapping host memory to OMP4 device not implemented!");
+                        throw std::runtime_error("Mapping host memory to OpenACC device not implemented!");
                     }
                     //-----------------------------------------------------------------------------
                     ALPAKA_FN_HOST static auto getPtrDev(
@@ -698,7 +699,7 @@ namespace alpaka
                         dev::DevOacc const &)
                     -> TElem *
                     {
-                        throw std::runtime_error("Mapping host memory to OMP4 device not implemented!");
+                        throw std::runtime_error("Mapping host memory to OpenACC device not implemented!");
                     }
                 };
             }
