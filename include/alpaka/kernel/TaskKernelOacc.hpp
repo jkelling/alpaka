@@ -32,8 +32,6 @@
 
 #include <alpaka/meta/ApplyTuple.hpp>
 
-#include <omp.h>
-
 #include <functional>
 #include <stdexcept>
 #include <tuple>
