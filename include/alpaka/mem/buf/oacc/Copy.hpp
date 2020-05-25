@@ -379,7 +379,7 @@ namespace alpaka
                                     viewSrc,
                                     extent,
                                     dev::getDev(viewDst),
-#if _OPENACC >= 201510
+#if _OPENACC >= 201510 && ( ! defined __GNUC__ )
                                     acc_memcpy_device
 #else
                                     // acc_memcpy_device is only available since OpenACC2.5
