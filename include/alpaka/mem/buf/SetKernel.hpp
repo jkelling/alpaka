@@ -9,6 +9,11 @@
 
 #pragma once
 
+#include <alpaka/mem/buf/Traits.hpp>
+#include <alpaka/idx/Traits.hpp>
+#include <alpaka/idx/Accessors.hpp>
+#include <alpaka/idx/MapIdx.hpp>
+
 namespace alpaka
 {
     namespace mem
