@@ -21,9 +21,6 @@
 #include <alpaka/atomic/AtomicOaccBuiltIn.hpp>
 #include <alpaka/atomic/AtomicHierarchy.hpp>
 #include <alpaka/math/MathStdLib.hpp>
-#include <alpaka/block/shared/dyn/BlockSharedMemDynOacc.hpp>
-#include <alpaka/block/shared/st/BlockSharedMemStOacc.hpp>
-#include <alpaka/block/sync/BlockSyncBarrierOacc.hpp>
 #include <alpaka/rand/RandStdLib.hpp>
 #include <alpaka/time/TimeStdLib.hpp>
 
@@ -83,9 +80,6 @@ namespace alpaka
                 atomic::AtomicOaccBuiltIn     // thread atomics
             >,
             public math::MathStdLib,
-            public block::shared::dyn::BlockSharedMemDynOacc, // dummy
-            public block::shared::st::BlockSharedMemStOacc, // dummy
-            public block::sync::BlockSyncBarrierOacc, // dummy
             public rand::RandStdLib,
             public time::TimeStdLib,
             public concepts::Implements<ConceptAcc, AccOacc<TDim, TIdx>>
@@ -103,10 +97,6 @@ namespace alpaka
                         atomic::AtomicOaccBuiltIn     // thread atomics
                     >(),
                     math::MathStdLib(),
-                    block::shared::dyn::BlockSharedMemDynOacc(),
-                    //! \TODO can with some TMP determine the amount of statically alloced smem from the kernelFuncObj?
-                    block::shared::st::BlockSharedMemStOacc(),
-                    block::sync::BlockSyncBarrierOacc(),
                     rand::RandStdLib(),
                     time::TimeStdLib()
             {}
