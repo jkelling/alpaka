@@ -47,7 +47,7 @@ namespace alpaka
                              + (sizeBytes%core::vectorization::defaultAlignment>0))*core::vectorization::defaultAlignment)
                     {
 #if (defined ALPAKA_DEBUG_OFFLOAD_ASSUME_HOST) && (! defined NDEBUG)
-                        ALPAKA_ASSERT(sizeBytes <= staticAllocBytes);
+                        ALPAKA_ASSERT(sizeBytes <= staticAllocBytes());
 #endif
                     }
                     //-----------------------------------------------------------------------------
@@ -74,13 +74,14 @@ namespace alpaka
                      */
                     unsigned int staticMemCapacity() const
                     {
-                        return staticAllocBytes - m_dynPitch;
+                        return staticAllocBytes() - m_dynPitch;
                     }
 
                 private:
-                    static constexpr unsigned int staticAllocBytes = TStaticAllocKiB<<10;
+                    // static constexpr unsigned int staticAllocBytes = TStaticAllocKiB<<10;
+                    static constexpr unsigned int staticAllocBytes() {return TStaticAllocKiB<<10;}
 
-                    mutable std::array<uint8_t, staticAllocBytes> m_mem;
+                    mutable std::array<uint8_t, staticAllocBytes()> m_mem;
                     unsigned int m_dynPitch;
                 };
 #if BOOST_COMP_MSVC || defined(BOOST_COMP_MSVC_EMULATED)
