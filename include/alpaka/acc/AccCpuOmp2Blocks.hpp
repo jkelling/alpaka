@@ -24,8 +24,8 @@
 #include <alpaka/atomic/AtomicOmpBuiltIn.hpp>
 #include <alpaka/atomic/AtomicHierarchy.hpp>
 #include <alpaka/math/MathStdLib.hpp>
-#include <alpaka/block/shared/dyn/BlockSharedMemDynBoostAlignedAlloc.hpp>
-#include <alpaka/block/shared/st/BlockSharedMemStNoSync.hpp>
+#include <alpaka/block/shared/dyn/BlockSharedMemDynMember.hpp>
+#include <alpaka/block/shared/st/BlockSharedMemStMember.hpp>
 #include <alpaka/block/sync/BlockSyncNoOp.hpp>
 #include <alpaka/rand/RandStdLib.hpp>
 #include <alpaka/time/TimeOmp.hpp>
@@ -77,8 +77,8 @@ namespace alpaka
                 atomic::AtomicNoOp           // thread atomics
             >,
             public math::MathStdLib,
-            public block::shared::dyn::BlockSharedMemDynBoostAlignedAlloc,
-            public block::shared::st::BlockSharedMemStNoSync,
+            public block::shared::dyn::BlockSharedMemDynMember<>,
+            public block::shared::st::BlockSharedMemStMember<>,
             public block::sync::BlockSyncNoOp,
             public rand::RandStdLib,
             public time::TimeOmp,
@@ -109,8 +109,8 @@ namespace alpaka
                         atomic::AtomicNoOp        // atomics between threads
                     >(),
                     math::MathStdLib(),
-                    block::shared::dyn::BlockSharedMemDynBoostAlignedAlloc(static_cast<std::size_t>(blockSharedMemDynSizeBytes)),
-                    block::shared::st::BlockSharedMemStNoSync(),
+                    block::shared::dyn::BlockSharedMemDynMember<>(static_cast<unsigned int>(blockSharedMemDynSizeBytes)),
+                    block::shared::st::BlockSharedMemStMember<>(staticMemBegin(), staticMemCapacity()),
                     block::sync::BlockSyncNoOp(),
                     rand::RandStdLib(),
                     time::TimeOmp(),
