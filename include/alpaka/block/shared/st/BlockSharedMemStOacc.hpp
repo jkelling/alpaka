@@ -54,7 +54,7 @@ namespace alpaka
                         template<typename T>
                         static constexpr size_t alignPitch()
                         {
-                            return sizeof(T)/sizeof(size_t) + (sizeof(T)/sizeof(size_t)>0);
+                            return sizeof(T)/sizeof(size_t) + (sizeof(T)%sizeof(size_t)>0);
                         }
 
                         public:
