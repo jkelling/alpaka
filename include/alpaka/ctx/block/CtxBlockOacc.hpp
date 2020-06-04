@@ -18,8 +18,8 @@
 // Base classes.
 #include <alpaka/workdiv/WorkDivMembers.hpp>
 #include <alpaka/idx/gb/IdxGbOaccBuiltIn.hpp>
-#include <alpaka/block/shared/dyn/BlockSharedMemDynOacc.hpp>
-#include <alpaka/block/shared/st/BlockSharedMemStOacc.hpp>
+#include <alpaka/block/shared/dyn/BlockSharedMemDynMember.hpp>
+#include <alpaka/block/shared/st/BlockSharedMemStMember.hpp>
 #include <alpaka/block/sync/BlockSyncBarrierOacc.hpp>
 
 // Specialized traits.
@@ -49,8 +49,8 @@ namespace alpaka
         class CtxBlockOacc final :
             public workdiv::WorkDivMembers<TDim, TIdx>,
             public idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>::BlockShared,
-            public block::shared::dyn::BlockSharedMemDynOacc::BlockShared,
-            public block::shared::st::BlockSharedMemStOacc::BlockShared,
+            public block::shared::dyn::BlockSharedMemDynMember<>,
+            public block::shared::st::detail::BlockSharedMemStMemberImpl<4>,
             public block::sync::BlockSyncBarrierOacc::BlockShared,
             public concepts::Implements<block::shared::st::ConceptBlockSharedSt, CtxBlockOacc<TDim, TIdx>>
         {
@@ -73,9 +73,9 @@ namespace alpaka
                 TIdx const & blockSharedMemDynSizeBytes) :
                     workdiv::WorkDivMembers<TDim, TIdx>(gridBlockExtent, blockThreadExtent, threadElemExtent),
                     idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>::BlockShared(gridBlockIdx),
-                    block::shared::dyn::BlockSharedMemDynOacc::BlockShared(static_cast<std::size_t>(blockSharedMemDynSizeBytes)),
+                    block::shared::dyn::BlockSharedMemDynMember<>(static_cast<unsigned int>(blockSharedMemDynSizeBytes)),
                     //! \TODO can with some TMP determine the amount of statically alloced smem from the kernelFuncObj?
-                    block::shared::st::BlockSharedMemStOacc::BlockShared(staticMemBegin()),
+                    block::shared::st::detail::BlockSharedMemStMemberImpl<4>(staticMemBegin(), staticMemCapacity()),
                     block::sync::BlockSyncBarrierOacc::BlockShared()
             {}
 
