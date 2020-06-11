@@ -125,7 +125,9 @@ namespace alpaka
         }
         //#############################################################################
         //! The Oacc device handle.
-        class DevOacc : public concepts::Implements<wait::ConceptCurrentThreadWaitFor, DevOacc>
+        class DevOacc :
+            public concepts::Implements<wait::ConceptCurrentThreadWaitFor, DevOacc>
+            public concepts::Implements<ConceptDev, DevOacc>
         {
             friend struct pltf::traits::GetDevByIdx<pltf::PltfOacc>;
 
