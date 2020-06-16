@@ -18,7 +18,7 @@ enable only the OpenACC backend.
 ```bash
 cmake .. \
   -DALPAKA_ACC_ANY_BT_OACC_ENABLE=on \
-  -DALPAKA_ACC_CPU_BT_OMP4_ENABLE=off \
+  -DALPAKA_ACC_ANY_BT_OMP5_ENABLE=off \
   -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE=on \
   -DALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE=off \
   -DALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE=off \
@@ -37,7 +37,8 @@ required OpenACC flags for the compiler. Additional flags can be added, e.g:
   ```
   As of gcc 9.2 no test will compile if the nvptx backend is enabled. If cmake
   fails to set the `-fopenacc` flag, it can be set manually.
-- pgi, target tesla:
+- pgi, target tesla (set `$CC`, `$CXX` and `$CUDA_HOME` to appropriate values
+  for your system to use pgi):
   ```bash
     -DCMAKE_CXX_FLAGS="-acc -ta=tesla -Minfo"
   ```
@@ -50,12 +51,12 @@ required OpenACC flags for the compiler. Additional flags can be added, e.g:
 make helloWorld
 ./examples/helloWorld/helloWorld
 ```
-The output should end with
+The output should end with something like
 ```
 [z:3, y:7, x:15][linear:511] Hello World
 ```
 Numbers can vary when teams are executed in parallel: 512 teams, with one worker
-each are started in a 3d grid. Each reports its grid coordinates and linear
+each are started in a 3d grid. Each worker reports its grid coordinates and linear
 index.
 
 |compiler|compile status|target|run status|
