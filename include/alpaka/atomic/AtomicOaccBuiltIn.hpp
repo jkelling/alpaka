@@ -128,7 +128,9 @@ namespace alpaka
                     T old;
                     auto & ref(*addr);
                     // atomically update ref, but capture the original value in old
+#if (! defined BOOST_COMP_PGI ) || defined TPR28628 // triggers PGI TPR28628, not atomic until fixed
                     #pragma acc atomic capture
+#endif
                     {
                         old = ref;
                         ref = value;
