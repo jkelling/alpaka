@@ -24,6 +24,16 @@
 #include <string>
 #include <map>
 
+#define PMACC_CASSERT_MSG(...)
+#define HDINLINE inline
+#define float_X double
+#include "pmacc/math/ConstVector.hpp"
+
+#define CONST_VECTOR(type,dim,name,...) PMACC_CONST_VECTOR(type,dim,name,__VA_ARGS__)
+
+// CONST_VECTOR( float_X, 3, DriftParamElectrons_direction, 0.0, 0.0, 1.0 );
+CONST_VECTOR( float_X, 3, DriftParamIons_direction, 0.0, 0.0, -1.0 );
+
 //#############################################################################
 //! Hello World Kernel
 //!
@@ -34,43 +44,22 @@ struct HelloWorldKernel
     template<
         typename TAcc>
     ALPAKA_FN_ACC auto operator()(
-        TAcc const & acc) const
+        TAcc const & acc,
+        int i) const
     -> void
     {
-        using Dim = alpaka::dim::Dim<TAcc>;
-        using Idx = alpaka::idx::Idx<TAcc>;
-        using Vec = alpaka::vec::Vec<Dim, Idx>;
-        using Vec1 = alpaka::vec::Vec<alpaka::dim::DimInt<1u>, Idx>;
-
-        // In the most cases the parallel work distibution depends
-        // on the current index of a thread and how many threads
-        // exist overall. These information can be obtained by
-        // getIdx() and getWorkDiv(). In this example these
-        // values are obtained for a global scope.
-        Vec const globalThreadIdx = alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc);
-        Vec const globalThreadExtent = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
-
-        // Map the three dimensional thread index into a
-        // one dimensional thread index space. We call it
-        // linearize the thread index.
-        Vec1 const linearizedGlobalThreadIdx = alpaka::idx::mapIdx<1u>(
-            globalThreadIdx,
-            globalThreadExtent);
-
-        // Each thread prints a hello world to the terminal
-        // together with the global index of the thread in
-        // each dimension and the linearized global index.
-        // Mind, that alpaka uses the mathematical index
-        // order [z][y][x] where the last index is the fast one.
+        constexpr ConstArrayStorage<double, 3> stor;
         printf(
-            "[z:%u, y:%u, x:%u][linear:%u] Hello World\n",
-            static_cast<unsigned>(globalThreadIdx[0u]),
-            static_cast<unsigned>(globalThreadIdx[1u]),
-            static_cast<unsigned>(globalThreadIdx[2u]),
-            static_cast<unsigned>(linearizedGlobalThreadIdx[0u]));
+            "%f %f\n"
+            , DriftParamIons_direction_data[2]
+            , DriftParamIons_direction_data[2]
+            , stor[2]
+            // , picongpu::particles::manipulators::DriftParamIons_direction.x()
+            );
     }
 };
 
+#if 0
 struct ITask
 {
     virtual ~ITask() {}
@@ -84,11 +73,12 @@ class TaskHello : public ITask
     Queue* m_queue;
     WorkDiv m_workDiv;
     HelloWorldKernel m_helloWorldKernel;
+    int m_i;
 
     public:
 
-    TaskHello(Queue* queue, const WorkDiv& workDiv)
-        : m_queue(queue), m_workDiv(workDiv)
+    TaskHello(Queue* queue, const WorkDiv& workDiv, int i = 1)
+        : m_queue(queue), m_workDiv(workDiv), m_i(i)
     {}
     
     void exec() override
@@ -96,7 +86,8 @@ class TaskHello : public ITask
         alpaka::kernel::exec<Acc>(
             *m_queue,
             m_workDiv,
-            m_helloWorldKernel
+            m_helloWorldKernel,
+            m_i
             /* put kernel arguments here */);
         alpaka::wait::wait(*m_queue);
     }
@@ -154,6 +145,7 @@ struct TaskMap : public ITaskMap
         }
     }
 };
+#endif
 
 auto main(int argc, char* argv[])
 -> int
@@ -257,8 +249,8 @@ auto main(int argc, char* argv[])
     Vec const threadsPerBlock(Vec::all(static_cast<Idx>(1)));
     Vec const blocksPerGrid(
         static_cast<Idx>(4),
-        static_cast<Idx>(8),
-        static_cast<Idx>(16));
+        static_cast<Idx>(2),
+        static_cast<Idx>(2));
 
     using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, Idx>;
     WorkDiv const workDiv(
@@ -267,7 +259,7 @@ auto main(int argc, char* argv[])
         elementsPerThread);
 
 
-#if 0
+#if 1
     // Instantiate the kernel function object
     //
     // Kernels can be everything that has a callable operator()
@@ -287,7 +279,7 @@ auto main(int argc, char* argv[])
     alpaka::kernel::exec<Acc>(
         queue,
         workDiv,
-        helloWorldKernel
+        helloWorldKernel,argc
         /* put kernel arguments here */);
     alpaka::wait::wait(queue);
 #else
