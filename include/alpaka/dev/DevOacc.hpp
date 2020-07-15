@@ -243,6 +243,23 @@ namespace alpaka
             };
 
             //#############################################################################
+            //! The OpenACC device warp size get trait specialization.
+            template<>
+            struct GetWarpSize<
+                dev::DevOacc>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST static auto getWarpSize(
+                    dev::DevOacc const & dev)
+                -> std::size_t
+                {
+                    alpaka::ignore_unused(dev);
+
+                    return 1u;
+                }
+            };
+
+            //#############################################################################
             //! The CUDA RT device reset trait specialization.
             template<>
             struct Reset<
