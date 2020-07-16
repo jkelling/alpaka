@@ -48,6 +48,8 @@ endif()
 #-------------------------------------------------------------------------------
 # Add executable.
 
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/include/")
+
 alpaka_add_executable(
     ${_TARGET_NAME}
     src/helloWorld.cpp)

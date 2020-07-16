@@ -52,100 +52,11 @@ struct HelloWorldKernel
         printf(
             "%f %f\n"
             , DriftParamIons_direction_data[2]
-            , DriftParamIons_direction_data[2]
             , stor[2]
             // , picongpu::particles::manipulators::DriftParamIons_direction.x()
             );
     }
 };
-
-#if 0
-struct ITask
-{
-    virtual ~ITask() {}
-
-    virtual void exec() = 0;
-};
-
-template<class Acc, class Queue, class WorkDiv>
-class TaskHello : public ITask
-{
-    Queue* m_queue;
-    WorkDiv m_workDiv;
-    HelloWorldKernel m_helloWorldKernel;
-    int m_i;
-
-    public:
-
-    TaskHello(Queue* queue, const WorkDiv& workDiv, int i = 1)
-        : m_queue(queue), m_workDiv(workDiv), m_i(i)
-    {}
-    
-    void exec() override
-    {
-        alpaka::kernel::exec<Acc>(
-            *m_queue,
-            m_workDiv,
-            m_helloWorldKernel,
-            m_i
-            /* put kernel arguments here */);
-        alpaka::wait::wait(*m_queue);
-    }
-};
-
-struct TaskNop : public ITask
-{
-    void exec() override {std::cout << "nop" << std::endl;}
-};
-
-// template<class Acc, class Queue, class WorkDiv>
-// ITask* taskFactory(int argc, char* argv[], Queue* queue, const WorkDiv& workDiv)
-// {
-//     if(argc > 1)
-//         return new TaskHello<Acc, Queue, WorkDiv>(queue, workDiv);
-//     else
-//         return new TaskNop();
-// }
-// 
-struct ITaskMap
-{
-    std::map<std::string, std::unique_ptr<ITask>> m_map;
-    virtual ~ITaskMap() {}
-
-    virtual void exec(const std::string& a) = 0;
-    virtual void create(const std::string& a) = 0;
-};
-
-template<class Acc, class Queue, class WorkDiv>
-struct TaskMap : public ITaskMap
-{
-    Queue* m_queue;
-    WorkDiv m_workDiv;
-
-    TaskMap(Queue* queue, const WorkDiv& workDiv)
-        : m_queue(queue), m_workDiv(workDiv)
-    {}
-
-    void exec(const std::string& a) override
-    {
-        auto& task = m_map[a];
-        if(task)
-            task->exec();
-    }
-
-    void create(const std::string& a) override
-    {
-        if(a == "hello")
-        {
-            m_map["hello"].reset(new TaskHello<Acc, Queue, WorkDiv>(m_queue, m_workDiv));
-        }
-        else
-        {
-            m_map[a] = std::make_unique<TaskNop>();
-        }
-    }
-};
-#endif
 
 auto main(int argc, char* argv[])
 -> int
@@ -258,8 +169,6 @@ auto main(int argc, char* argv[])
         threadsPerBlock,
         elementsPerThread);
 
-
-#if 1
     // Instantiate the kernel function object
     //
     // Kernels can be everything that has a callable operator()
@@ -282,16 +191,6 @@ auto main(int argc, char* argv[])
         helloWorldKernel,argc
         /* put kernel arguments here */);
     alpaka::wait::wait(queue);
-#else
-    auto map = std::unique_ptr<ITaskMap>(new TaskMap<Acc, Queue, WorkDiv>(&queue, workDiv));
-    map->create("nop");
-    map->create("hello");
-    if(argc > 1)
-        map->exec(argv[1]);
-    // auto task = taskFactory<Acc, Queue, WorkDiv>(argc, argv, &queue, workDiv);
-    // task->exec();
-    // delete task;
-#endif
 
     return EXIT_SUCCESS;
 #endif
