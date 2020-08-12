@@ -46,7 +46,7 @@ namespace alpaka
     namespace kernel
     {
         //#############################################################################
-        //! The CPU OpenMP 4.0 accelerator execution task.
+        //! The OpenACC accelerator execution task.
         template<
             typename TDim,
             typename TIdx,
@@ -131,65 +131,50 @@ namespace alpaka
                 std::cout << "threadElemCount=" << threadElemExtent[0u]
                     << "\tgridBlockCount=" << gridBlockCount << std::endl;
 #endif
-                // `When an if(scalar-expression) evaluates to false, the structured block is executed on the host.`
                 auto argsD = m_args;
                 auto kernelFnObj = m_kernelFnObj;
                 dev.makeCurrent();
                 #pragma acc parallel num_workers(blockThreadCount) copyin(threadElemExtent,blockThreadExtent,argsD,gridBlockExtent) default(present)
                 {
                     {
-                            #pragma acc loop gang
-                            for(TIdx b = 0u; b<gridBlockCount; ++b)
+                        #pragma acc loop gang
+                        for(TIdx b = 0u; b<gridBlockCount; ++b)
+                        {
+                            ctx::CtxBlockOacc<TDim, TIdx> blockShared(
+                                gridBlockExtent,
+                                blockThreadExtent,
+                                threadElemExtent,
+                                b,
+                                blockSharedMemDynSizeBytes);
+
+                            // Execute the threads in parallel.
+
+                            // Parallel execution of the threads in a block is required because when syncBlockThreads is called all of them have to be done with their work up to this line.
+                            // So we have to spawn one OS thread per thread in a block.
+                            //! \warning The OpenACC is technically allowed to ignore the value in the num_workers clause
+                            //! and could run fewer threads. The standard provides no way to check how many worker threads are running.
+                            //! If fewer threads are run, syncBlockThreads will dead-lock. It is up to the developer/user
+                            //! to choose a blockThreadCount which the runtime will respect.
+                            #pragma acc loop worker
+                            for(TIdx w = 0; w < blockThreadCount; ++w)
                             {
-                                ctx::CtxBlockOacc<TDim, TIdx> blockShared(
-                                    gridBlockExtent,
-                                    blockThreadExtent,
-                                    threadElemExtent,
-                                    b,
-                                    blockSharedMemDynSizeBytes);
+                                // blockThreadIdx[0] = w;
+                                ctx::CtxThreadOacc<TDim, TIdx> acc(
+                                    w,
+                                    blockShared);
 
-                                // Execute the threads in parallel.
-
-                                // Parallel execution of the threads in a block is required because when syncBlockThreads is called all of them have to be done with their work up to this line.
-                                // So we have to spawn one OS thread per thread in a block.
-                                // 'omp for' is not useful because it is meant for cases where multiple iterations are executed by one thread but in our case a 1:1 mapping is required.
-                                // Therefore we use 'omp parallel' with the specified number of threads in a block.
-                                // vec::Vec<dim::DimInt<1u>, TIdx> blockThreadIdx(static_cast<TIdx>(0u));
-                                #pragma acc loop worker
-                                for(TIdx w = 0; w < blockThreadCount; ++w)
-                                {
-                                    // blockThreadIdx[0] = w;
-                                    ctx::CtxThreadOacc<TDim, TIdx> acc(
-                                        w,
-                                        blockShared);
-
-#if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL && 0
-                                    // The first thread does some checks in the first block executed.
-                                    if((::omp_get_thread_num() == 0) && (b == 0))
+                                meta::apply(
+                                    [kernelFnObj, &acc](typename std::decay<TArgs>::type const & ... args)
                                     {
-                                        int const numThreads(::omp_get_num_threads());
-                                        printf("%s omp_get_num_threads: %d\n", __func__, numThreads);
-                                        if(numThreads != static_cast<int>(blockThreadCount))
-                                        {
-                                            printf("ERROR: The OpenMP runtime did not use the number of threads that had been requested!\n");
-                                        }
-                                    }
-#endif
-                                    meta::apply(
-                                        [kernelFnObj, &acc](typename std::decay<TArgs>::type const & ... args)
-                                        {
-                                            kernelFnObj(
-                                                    acc,
-                                                    args...);
-                                        },
-                                        argsD);
+                                        kernelFnObj(
+                                                acc,
+                                                args...);
+                                    },
+                                    argsD);
 
-                                    // Wait for all threads to finish before deleting the shared memory.
-                                    // This is done by default if the omp 'nowait' clause is missing
-                                    //block::sync::syncBlockThreads(acc);
-                                }
-                                block::shared::st::freeMem(blockShared);
                             }
+                            block::shared::st::freeMem(blockShared);
+                        }
                     }
                 }
             }
@@ -205,7 +190,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 execution task accelerator type trait specialization.
+            //! The OpenACC execution task accelerator type trait specialization.
             template<
                 typename TDim,
                 typename TIdx,
@@ -223,7 +208,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 execution task device type trait specialization.
+            //! The OpenACC execution task device type trait specialization.
             template<
                 typename TDim,
                 typename TIdx,
@@ -241,7 +226,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 execution task dimension getter trait specialization.
+            //! The OpenACC execution task dimension getter trait specialization.
             template<
                 typename TDim,
                 typename TIdx,
@@ -259,7 +244,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 execution task platform type trait specialization.
+            //! The OpenACC execution task platform type trait specialization.
             template<
                 typename TDim,
                 typename TIdx,
@@ -277,7 +262,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CPU OpenMP 4.0 execution task idx type trait specialization.
+            //! The OpenACC execution task idx type trait specialization.
             template<
                 typename TDim,
                 typename TIdx,
