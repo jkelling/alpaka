@@ -127,35 +127,20 @@ namespace alpaka
                 // The number of threads in a block.
                 TIdx const blockThreadCount(blockThreadExtent.prod());
 
-                // make sure there is at least on team
-                TIdx const teamCount(gridBlockCount);
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
-                std::cout << "threadElemCount=" << threadElemExtent[0u] << std::endl;
-                std::cout << "teamCount=" << teamCount << "\tgridBlockCount=" << gridBlockCount << std::endl;
+                std::cout << "threadElemCount=" << threadElemExtent[0u]
+                    << "\tgridBlockCount=" << gridBlockCount << std::endl;
 #endif
                 // `When an if(scalar-expression) evaluates to false, the structured block is executed on the host.`
                 auto argsD = m_args;
                 auto kernelFnObj = m_kernelFnObj;
                 dev.makeCurrent();
-                #pragma acc parallel num_gangs(teamCount) num_workers(blockThreadCount)
+                #pragma acc parallel num_workers(blockThreadCount) copyin(threadElemExtent,blockThreadExtent,argsD,gridBlockExtent) default(present)
                 {
                     {
-                        printf("threadElemCount_dev %d\n", int(threadElemExtent[0u]));
-                        // iterate over groups of teams to stay withing thread limit
-                        for(TIdx t = 0u; t < gridBlockCount; t+=teamCount)
-                        {
-                            // printf("acc->threadElemCount %d\n"
-                            //         , int(acc.m_threadElemExtent[0]));
-
-                            const TIdx bsup = std::min(static_cast<TIdx>(t + teamCount), gridBlockCount);
                             #pragma acc loop gang
-                            for(TIdx b = t; b<bsup; ++b)
+                            for(TIdx b = 0u; b<gridBlockCount; ++b)
                             {
-                                // vec::Vec<dim::DimInt<1u>, TIdx> const gridBlockIdx(b);
-                                // When this is not repeated here:
-                                // error: gridBlockExtent referenced in target region does not have a mappable type
-                                // auto const gridBlockExtent2(
-                                //     workdiv::getWorkDiv<Grid, Blocks>(*static_cast<workdiv::WorkDivMembers<TDim, TIdx> const *>(this)));
                                 ctx::CtxBlockOacc<TDim, TIdx> blockShared(
                                     gridBlockExtent,
                                     blockThreadExtent,
@@ -205,7 +190,6 @@ namespace alpaka
                                 }
                                 block::shared::st::freeMem(blockShared);
                             }
-                        }
                     }
                 }
             }
