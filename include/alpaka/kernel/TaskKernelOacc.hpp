@@ -31,6 +31,7 @@
 #include <alpaka/workdiv/WorkDivMembers.hpp>
 
 #include <alpaka/meta/ApplyTuple.hpp>
+#include <alpaka/core/Decay.hpp>
 
 #include <functional>
 #include <stdexcept>
@@ -106,7 +107,7 @@ namespace alpaka
                 // Get the size of the block shared dynamic memory.
                 auto const blockSharedMemDynSizeBytes(
                     meta::apply(
-                        [&](std::decay_t<TArgs> const & ... args)
+                        [&](ALPAKA_DECAY_T(TArgs) const & ... args)
                         {
                             return
                                 kernel::getBlockSharedMemDynSizeBytes<
