@@ -98,11 +98,11 @@ namespace alpaka
                     workdiv::getWorkDiv<Block, Threads>(*this));
                 auto const threadElemExtent(
                     workdiv::getWorkDiv<Thread, Elems>(*this));
-
+#if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
                 std::cout << "m_gridBlockExtent=" << this->m_gridBlockExtent << "\tgridBlockExtent=" << gridBlockExtent << std::endl;
                 std::cout << "m_blockThreadExtent=" << this->m_blockThreadExtent << "\tblockThreadExtent=" << blockThreadExtent << std::endl;
                 std::cout << "m_threadElemExtent=" << this->m_threadElemExtent << "\tthreadElemExtent=" << threadElemExtent << std::endl;
-
+#endif
                 // Get the size of the block shared dynamic memory.
                 auto const blockSharedMemDynSizeBytes(
                     meta::apply(
@@ -118,7 +118,7 @@ namespace alpaka
                         },
                         m_args));
 
-#if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
+#if ALPAKA_DEBUG > ALPAKA_DEBUG_MINIMAL
                 std::cout << __func__
                     << " blockSharedMemDynSizeBytes: " << blockSharedMemDynSizeBytes << " B" << std::endl;
 #endif
@@ -129,9 +129,10 @@ namespace alpaka
 
                 // make sure there is at least on team
                 TIdx const teamCount(gridBlockCount);
+#if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
                 std::cout << "threadElemCount=" << threadElemExtent[0u] << std::endl;
                 std::cout << "teamCount=" << teamCount << "\tgridBlockCount=" << gridBlockCount << std::endl;
-
+#endif
                 // `When an if(scalar-expression) evaluates to false, the structured block is executed on the host.`
                 auto argsD = m_args;
                 auto kernelFnObj = m_kernelFnObj;
