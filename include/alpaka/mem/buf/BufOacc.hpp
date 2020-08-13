@@ -378,14 +378,13 @@ namespace alpaka
 
                         dev.makeCurrent();
                         void * memPtr = acc_malloc(static_cast<std::size_t>(widthBytes));
-                        std::cout << "alloc'd device ptr: " << memPtr << " on device "
-                            << dev.m_spDevOaccImpl->iDevice() << " size " << widthBytes << std::endl;
 
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
                         std::cout << __func__
                             << " ew: " << width
                             << " ewb: " << widthBytes
                             << " ptr: " << memPtr
+                            << " device: " << dev.m_spDevOaccImpl->iDevice()
                             << std::endl;
 #endif
                         return
