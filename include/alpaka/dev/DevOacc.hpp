@@ -162,6 +162,9 @@ namespace alpaka
             int iDevice() const {return m_spDevOaccImpl->iDevice();}
             void makeCurrent() const
             {
+#if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
+                std::cout << "acc_set_device_num( " << m_spDevOaccImpl->iDevice() << ", [type] )" << std::endl;
+#endif
                 acc_set_device_num(m_spDevOaccImpl->iDevice(), m_spDevOaccImpl->deviceType());
             }
 
