@@ -57,6 +57,8 @@ namespace alpaka
                         /*virtual*/ ~BlockShared() = default;
 
                         std::uint8_t mutable m_generation = 0u;
+                        // NVHPC 20.7: initializer causes warning:
+                        // NVC++-W-0155-External and Static variables are not supported in acc routine - _T139951818207704_37530
                         int mutable m_syncCounter[4] {0,0,0,0};
                         int mutable m_result;
                 };
