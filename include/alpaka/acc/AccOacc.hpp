@@ -20,6 +20,7 @@
 #include <alpaka/idx/bt/IdxBtOaccBuiltIn.hpp>
 #include <alpaka/atomic/AtomicOaccBuiltIn.hpp>
 #include <alpaka/atomic/AtomicHierarchy.hpp>
+#include <alpaka/intrinsic/IntrinsicFallback.hpp>
 #include <alpaka/math/MathStdLib.hpp>
 #include <alpaka/rand/RandStdLib.hpp>
 #include <alpaka/time/TimeStdLib.hpp>
@@ -82,6 +83,8 @@ namespace alpaka
             public math::MathStdLib,
             public rand::RandStdLib,
             public time::TimeStdLib,
+            // NVHPC calls a builtin in the STL implementation, which fails in OpenACC offload, using fallback
+            public intrinsic::IntrinsicFallback,
             public concepts::Implements<ConceptAcc, AccOacc<TDim, TIdx>>
         {
 
