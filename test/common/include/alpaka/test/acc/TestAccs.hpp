@@ -134,7 +134,8 @@ namespace alpaka
                     typename TIdx>
                 using AccOmp5IfAvailableElseInt = int;
 #endif
-#if defined(ALPAKA_ACC_ANY_BT_OACC_ENABLED) && !defined(ALPAKA_CUDA_CI) && !(defined(TEST_UNIT_KERNEL_KERNEL_STD_FUNCTION))
+#if defined(ALPAKA_ACC_ANY_BT_OACC_ENABLED) && !defined(ALPAKA_CUDA_CI) && !(defined(TEST_UNIT_KERNEL_KERNEL_STD_FUNCTION)) \
+        && !(defined(TEST_UNIT_ATOMIC))
                 template<
                     typename TDim,
                     typename TIdx>
