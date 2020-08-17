@@ -148,6 +148,10 @@ namespace alpaka
                         T,
                         ctx::CtxThreadOacc<TDim, TIdx>>
                     {
+#if BOOST_COMP_GNUC
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align" // "cast from 'unsigned char*' to 'unsigned int*' increases required alignment of target type"
+#endif
                         //-----------------------------------------------------------------------------
                         static auto getMem(
                             ctx::CtxThreadOacc<TDim, TIdx> const &mem)
@@ -155,6 +159,9 @@ namespace alpaka
                         {
                             return reinterpret_cast<T*>(mem.m_blockShared.dynMemBegin());
                         }
+#if BOOST_COMP_GNUC
+    #pragma GCC diagnostic pop
+#endif
                     };
                 }
             }
