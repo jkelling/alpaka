@@ -109,6 +109,7 @@ namespace alpaka
                 using AccCpuOmp2ThreadsIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_ANY_BT_OMP5_ENABLED) && !defined(TEST_UNIT_KERNEL_KERNEL_STD_FUNCTION) \
+        && !defined(TEST_UNIT_ATOMIC) \
         && !( BOOST_COMP_GNUC && ( \
                 ( (BOOST_COMP_GNUC < BOOST_VERSION_NUMBER(11, 0, 0)) && \
                     /* tests excluded because of GCC10 Oacc / Omp5 target symbol bug with multiple units */ \
@@ -134,8 +135,18 @@ namespace alpaka
                     typename TIdx>
                 using AccOmp5IfAvailableElseInt = int;
 #endif
-#if defined(ALPAKA_ACC_ANY_BT_OACC_ENABLED) && !defined(ALPAKA_CUDA_CI) && !(defined(TEST_UNIT_KERNEL_KERNEL_STD_FUNCTION)) \
-        && !(defined(TEST_UNIT_ATOMIC))
+#if defined(ALPAKA_ACC_ANY_BT_OACC_ENABLED) && !(defined(TEST_UNIT_KERNEL_KERNEL_STD_FUNCTION)) \
+        && !( BOOST_COMP_GNUC && ( \
+                /* tests excluded because of GCC10 Oacc / Omp5 target symbol bug with multiple units */ \
+                defined(TEST_UNIT_BLOCK_SHARED) \
+                || defined(TEST_UNIT_BLOCK_SYNC) \
+                || defined(TEST_UNIT_WARP) \
+                || defined(TEST_UNIT_INTRINSIC) \
+                || defined(TEST_UNIT_KERNEL) \
+                || defined(TEST_UNIT_MEM_VIEW) \
+                || defined(TEST_UNIT_MATH) /* because of static const members */ \
+                || defined(TEST_UNIT_MEM_BUF) /* actually works, but hangs when ran by ctest */ \
+            ))
                 template<
                     typename TDim,
                     typename TIdx>
