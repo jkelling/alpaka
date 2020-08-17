@@ -24,6 +24,8 @@
 #include <alpaka/math/MathStdLib.hpp>
 #include <alpaka/rand/RandStdLib.hpp>
 #include <alpaka/time/TimeStdLib.hpp>
+#include <alpaka/ctx/block/CtxBlockOacc.hpp>
+#include <alpaka/warp/WarpSingleThread.hpp>
 
 // Specialized traits.
 #include <alpaka/acc/Traits.hpp>
@@ -83,6 +85,7 @@ namespace alpaka
             public math::MathStdLib,
             public rand::RandStdLib,
             public time::TimeStdLib,
+            public warp::WarpSingleThread,
             // NVHPC calls a builtin in the STL implementation, which fails in OpenACC offload, using fallback
             public intrinsic::IntrinsicFallback,
             public concepts::Implements<ConceptAcc, AccOacc<TDim, TIdx>>
