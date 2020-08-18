@@ -16,12 +16,7 @@
 #endif
 
 #include <alpaka/idx/Traits.hpp>
-
-#include <alpaka/vec/Vec.hpp>
-#include <alpaka/workdiv/WorkDivMembers.hpp>
-#include <alpaka/core/Positioning.hpp>
-#include <alpaka/core/Unused.hpp>
-#include <alpaka/idx/MapIdx.hpp>
+#include <alpaka/idx/gb/IdxGbLinear.hpp>
 
 namespace alpaka
 {
@@ -30,7 +25,7 @@ namespace alpaka
         namespace gb
         {
             //#############################################################################
-            //! The CUDA accelerator ND index provider.
+            //! The OpenACC ND index provider dummy.
             template<
                 typename TDim,
                 typename TIdx>
@@ -50,58 +45,7 @@ namespace alpaka
                 //-----------------------------------------------------------------------------
                 /*virtual*/ ~IdxGbOaccBuiltIn() = default;
 
-                class BlockShared : public concepts::Implements<ConceptIdxGb, BlockShared>
-                {
-                public:
-                    //-----------------------------------------------------------------------------
-                    BlockShared(const TIdx &gridBlockIdx) : m_gridBlockIdx(gridBlockIdx) {}
-                    //-----------------------------------------------------------------------------
-                    BlockShared(BlockShared const &) = delete;
-                    //-----------------------------------------------------------------------------
-                    BlockShared(BlockShared &&) = delete;
-                    //-----------------------------------------------------------------------------
-                    auto operator=(BlockShared const & ) -> BlockShared & = delete;
-                    //-----------------------------------------------------------------------------
-                    auto operator=(BlockShared &&) -> BlockShared & = delete;
-                    //-----------------------------------------------------------------------------
-                    /*virtual*/ ~BlockShared() = default;
-
-                    TIdx const m_gridBlockIdx;
-                };
-            };
-        }
-    }
-
-    namespace dim
-    {
-        namespace traits
-        {
-            //#############################################################################
-            //! The GPU CUDA accelerator index dimension get trait specialization.
-            template<
-                typename TDim,
-                typename TIdx>
-            struct DimType<
-                idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>>
-            {
-                using type = TDim;
-            };
-        }
-    }
-
-    namespace idx
-    {
-        namespace traits
-        {
-            //#############################################################################
-            //! The GPU CUDA accelerator grid block index idx type trait specialization.
-            template<
-                typename TDim,
-                typename TIdx>
-            struct IdxType<
-                idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>>
-            {
-                using type = TIdx;
+                using BlockShared = IdxGbLinear<TDim, TIdx>;
             };
         }
     }
