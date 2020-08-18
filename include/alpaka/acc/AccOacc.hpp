@@ -151,8 +151,8 @@ namespace alpaka
                     alpaka::ignore_unused(dev);
 
 #ifdef ALPAKA_CI
-                    auto const blockThreadCountMax(alpaka::core::clipCast<TIdx>(std::min(4, oaccMaxWorkerNum)));
-                    auto const gridBlockCountMax(alpaka::core::clipCast<TIdx>(std::min(4, oaccMaxGangNum)));
+                    auto const blockThreadCountMax(alpaka::core::clipCast<TIdx>(std::min(static_cast<size_t>(2u), oaccMaxWorkerNum)));
+                    auto const gridBlockCountMax(alpaka::core::clipCast<TIdx>(std::min(static_cast<size_t>(2u), oaccMaxGangNum)));
 #else
                     auto const blockThreadCountMax(alpaka::core::clipCast<TIdx>(oaccMaxWorkerNum));
                     auto const gridBlockCountMax(alpaka::core::clipCast<TIdx>(oaccMaxGangNum));
