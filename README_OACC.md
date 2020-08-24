@@ -18,15 +18,8 @@ enable only the OpenACC backend.
 ```bash
 cmake .. \
   -DALPAKA_ACC_ANY_BT_OACC_ENABLE=on \
-  -DALPAKA_ACC_ANY_BT_OMP5_ENABLE=off \
-  -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE=on \
-  -DALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE=off \
-  -DALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE=off \
-  -DALPAKA_ACC_CPU_B_SEQ_T_FIBERS_ENABLE=off \
-  -DALPAKA_ACC_CPU_B_SEQ_T_THREADS_ENABLE=off \
-  -DALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLE=off \
-  -DALPAKA_ACC_GPU_CUDA_ENABLE=off \
-  -DALPAKA_ACC_GPU_HIP_ENABLE=off \
+  -DBUILD_TESTING=on \
+  -Dalpaka_BUILD_EXAMPLES=on \
 ```
 All other backends are disabled for faster compilation/testing and reduced
 environment requirements. The cmake package OpenACC is used to detect the
