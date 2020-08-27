@@ -193,7 +193,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CUDA RT device name get trait specialization.
+            //! The OpenACC device name get trait specialization.
             template<>
             struct GetName<
                 dev::DevOacc>
@@ -208,7 +208,7 @@ namespace alpaka
             };
 
             //#############################################################################
-            //! The CUDA RT device available memory get trait specialization.
+            //! The OpenACC device available memory get trait specialization.
             template<>
             struct GetMemBytes<
                 dev::DevOacc>
@@ -227,7 +227,7 @@ namespace alpaka
             };
 
             //#############################################################################
-            //! The CUDA RT device free memory get trait specialization.
+            //! The OpenACC device free memory get trait specialization.
             template<>
             struct GetFreeMemBytes<
                 dev::DevOacc>
@@ -263,7 +263,7 @@ namespace alpaka
             };
 
             //#############################################################################
-            //! The CUDA RT device reset trait specialization.
+            //! The OpenACC device reset trait specialization.
             template<>
             struct Reset<
                 dev::DevOacc>
@@ -291,7 +291,7 @@ namespace alpaka
             namespace traits
             {
                 //#############################################################################
-                //! The CUDA RT device memory buffer type trait specialization.
+                //! The OpenACC device memory buffer type trait specialization.
                 template<
                     typename TElem,
                     typename TDim,
@@ -312,7 +312,7 @@ namespace alpaka
         namespace traits
         {
             //#############################################################################
-            //! The CUDA RT device platform type trait specialization.
+            //! The OpenACC device platform type trait specialization.
             template<>
             struct PltfType<
                 dev::DevOacc>
