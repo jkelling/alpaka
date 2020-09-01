@@ -76,9 +76,9 @@ namespace alpaka
                         if(pitch[0] <= 0)
                             return kernel::createTaskKernel<acc::AccOacc<TDim,Idx>>(
                                     workdiv::WorkDivMembers<TDim, Idx>(
-                                        vec::Vec<TDim, Idx>::ones(),
-                                        vec::Vec<TDim, Idx>::ones(),
-                                        vec::Vec<TDim, Idx>::ones()),
+                                        vec::Vec<TDim, Idx>::zeros(),
+                                        vec::Vec<TDim, Idx>::zeros(),
+                                        vec::Vec<TDim, Idx>::zeros()),
                                     view::MemSetKernel(),
                                     byte,
                                     reinterpret_cast<std::uint8_t*>(alpaka::mem::view::getPtrNative(view)),

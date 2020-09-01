@@ -99,11 +99,13 @@ namespace alpaka
                     workdiv::getWorkDiv<Block, Threads>(*this));
                 auto const threadElemExtent(
                     workdiv::getWorkDiv<Thread, Elems>(*this));
+
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
                 std::cout << "m_gridBlockExtent=" << this->m_gridBlockExtent << "\tgridBlockExtent=" << gridBlockExtent << std::endl;
                 std::cout << "m_blockThreadExtent=" << this->m_blockThreadExtent << "\tblockThreadExtent=" << blockThreadExtent << std::endl;
                 std::cout << "m_threadElemExtent=" << this->m_threadElemExtent << "\tthreadElemExtent=" << threadElemExtent << std::endl;
 #endif
+
                 // Get the size of the block shared dynamic memory.
                 auto const blockSharedMemDynSizeBytes(
                     meta::apply(
@@ -127,6 +129,11 @@ namespace alpaka
                 TIdx const gridBlockCount(gridBlockExtent.prod());
                 // The number of threads in a block.
                 TIdx const blockThreadCount(blockThreadExtent.prod());
+
+                if(gridBlockCount == 0 || blockThreadCount == 0)
+                { //! empty grid is a NOP
+                    return;
+                }
 
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
                 std::cout << "threadElemCount=" << threadElemExtent[0u]
