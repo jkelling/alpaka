@@ -160,6 +160,7 @@ namespace alpaka
             //-----------------------------------------------------------------------------
             ~DevOacc() = default;
             int iDevice() const {return m_spDevOaccImpl->iDevice();}
+            acc_device_t deviceType() const {return m_spDevOaccImpl->deviceType();}
             void makeCurrent() const
             {
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
@@ -218,11 +219,7 @@ namespace alpaka
                     dev::DevOacc const & dev)
                 -> std::size_t
                 {
-                    alpaka::ignore_unused(dev); //! \TODO
-                    // std::size_t freeInternal(0u);
-                    std::size_t totalInternal(6ull<<30); //! \TODO
-
-                    return totalInternal;
+                    return acc_get_property(dev.iDevice(), dev.deviceType(), acc_property_memory);
                 }
             };
 
@@ -237,11 +234,7 @@ namespace alpaka
                     dev::DevOacc const & dev)
                 -> std::size_t
                 {
-                    alpaka::ignore_unused(dev); //! \todo query device
-                    std::size_t freeInternal((6ull<<30));
-                    // std::size_t totalInternal(0u);
-
-                    return freeInternal;
+                    return acc_get_property(dev.iDevice(), dev.deviceType(), acc_property_free_memory);
                 }
             };
 
