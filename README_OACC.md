@@ -30,11 +30,19 @@ required OpenACC flags for the compiler. Additional flags can be added, e.g:
   ```
   As of gcc 9.2 no test will compile if the nvptx backend is enabled. If cmake
   fails to set the `-fopenacc` flag, it can be set manually.
-- pgi, target tesla (set `$CC`, `$CXX` and `$CUDA_HOME` to appropriate values
+- pgi/nvhpc, target tesla (set `$CC`, `$CXX` and `$CUDA_HOME` to appropriate values
   for your system to use pgi):
   ```bash
     -DCMAKE_CXX_FLAGS="-acc -ta=tesla -Minfo"
   ```
+
+## Limitations
+
+* *No separabel compilation*. OpenACC requires functions for which device code
+  should be generated for a not-inlined call in a target region to be marked with
+  pragmas. This cannot be wrapped by macros like `ALPAKA_FN_DEVICE` because they
+  appear between template parameter list and function name.
+  <https://github.com/alpaka-group/alpaka/pull/1126#discussion_r479761867>
 
 ## Test targets
 
@@ -54,8 +62,8 @@ index.
 
 |compiler|compile status|target|run status|
 |---|---|---|---|
-|GCC 10(dev)| ok|x86|ok|
-|PGI 19.10| ICE|tesla|--|
+|GCC 10| ok|x86|ok|
+|NVHPC 20.7| ok|tesla|ok|
 
 ### vectorAdd
 
@@ -71,16 +79,8 @@ Execution results correct!
 |compiler|compile status|target|run status|
 |---|---|---|---|
 |GCC 10(dev)| ok|x86|ok|
-|PGI 19.10| fail (1) |tesla|--|
+|NVHPC 20.7| ok|tesla|ok|
 
-1. 
-  ```
-  PGCC-W-0155-External and Static variables are not supported in acc routine - _T140319056362856_40208
-  (~alpaka/example/vectorAdd/src/vectorAdd.cpp: 47)
-  ```
-  The indicated line is a parameter of a function template called in an acc
-  parallel region. The type in this instance is `std::uint32_t const * const`.
-  
 ## Building and Running all tests
 
 ```bash
