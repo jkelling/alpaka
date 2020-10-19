@@ -756,7 +756,7 @@ namespace alpaka
                                     static_cast<std::size_t>(m_extentWidthBytes),
                                     static_cast<std::size_t>(m_extentHeight),
                                     static_cast<std::size_t>(m_extentDepth));
-#if defined(ALPAKA_ACC_GPU_HIP_ENABLED) && defined(__HIP_PLATFORM_NVCC__)
+#if defined(SPEC_HIP) && defined(ALPAKA_ACC_GPU_HIP_ENABLED) && defined(__HIP_PLATFORM_NVCC__)
                             memCpy3DParms.kind = hipMemcpyKindToCudaMemcpyKind(m_uniformMemCpyKind);
 #else
                             memCpy3DParms.kind = m_uniformMemCpyKind;

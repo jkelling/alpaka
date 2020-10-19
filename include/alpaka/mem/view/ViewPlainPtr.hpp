@@ -325,7 +325,7 @@ namespace alpaka
                                 reinterpret_cast<void **>(&pMemAcc),
                                 *pMem));
 #else
-    #ifdef __HIP_PLATFORM_NVCC__
+    #if defined(SPEC_HIP) && defined(__HIP_PLATFORM_NVCC__)
                         ALPAKA_UNIFORM_CUDA_HIP_RT_CHECK(hipCUDAErrorTohipError(
                             cudaGetSymbolAddress(
                                 reinterpret_cast<void **>(&pMemAcc),
