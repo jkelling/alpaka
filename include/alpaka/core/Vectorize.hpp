@@ -149,7 +149,7 @@ namespace alpaka
                 16u;
 #elif defined(__ALTIVEC__)
                 16u;
-#elif defined(__CUDA_ARCH__)
+#elif defined(SPEC_CUDA) && defined(__CUDA_ARCH__)
                 // addition: __vadd4
                 // subtraction: __vsub4
                 // multiplication: -
@@ -184,7 +184,7 @@ namespace alpaka
                 16u;
 #elif defined(__ALTIVEC__)
                 16u;
-#elif defined(__CUDA_ARCH__)
+#elif defined(SPEC_CUDA) && defined(__CUDA_ARCH__)
                 // addition: __vadd4
                 // subtraction: __vsub4
                 // multiplication: -
@@ -219,7 +219,7 @@ namespace alpaka
                 8u;
 #elif defined(__ALTIVEC__)
                 8u;
-#elif defined(__CUDA_ARCH__)
+#elif defined(SPEC_CUDA) && defined(__CUDA_ARCH__)
                 // addition: __vadd2
                 // subtraction: __vsub2
                 // multiplication: -
@@ -254,7 +254,7 @@ namespace alpaka
                 8u;
 #elif defined(__ALTIVEC__)
                 8u;
-#elif defined(__CUDA_ARCH__)
+#elif defined(SPEC_CUDA) && defined(__CUDA_ARCH__)
                 // addition: __vadd2
                 // subtraction: __vsub2
                 // multiplication: -
