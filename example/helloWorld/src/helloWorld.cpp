@@ -48,10 +48,10 @@ struct HelloWorldKernel
         int i) const
     -> void
     {
-        constexpr ConstArrayStorage<double, 3> stor;
+        constexpr ::pmacc_static_const_storage0::ConstArrayStorage<double, 3> stor;
         printf(
             "%f %f\n"
-            , DriftParamIons_direction_data[2]
+            , ::pmacc_static_const_storage0::pmacc_static_const_vector_host0::DriftParamIons_direction_data[2]
             , stor[2]
             // , picongpu::particles::manipulators::DriftParamIons_direction.x()
             );
