@@ -70,10 +70,10 @@ namespace alpaka
                 vec::Vec<TDim, TIdx> const & blockThreadExtent,
                 vec::Vec<TDim, TIdx> const & threadElemExtent,
                 TIdx const & gridBlockIdx,
-                TIdx const & blockSharedMemDynSizeBytes) :
+                std::size_t const & blockSharedMemDynSizeBytes) :
                     workdiv::WorkDivMembers<TDim, TIdx>(gridBlockExtent, blockThreadExtent, threadElemExtent),
                     idx::gb::IdxGbOaccBuiltIn<TDim, TIdx>::BlockShared(gridBlockIdx),
-                    block::shared::dyn::BlockSharedMemDynMember<>(static_cast<unsigned int>(blockSharedMemDynSizeBytes)),
+                    block::shared::dyn::BlockSharedMemDynMember<>(blockSharedMemDynSizeBytes),
                     //! \TODO can with some TMP determine the amount of statically alloced smem from the kernelFuncObj?
                     block::shared::st::detail::BlockSharedMemStMemberImpl<4>(staticMemBegin(), staticMemCapacity()),
                     block::sync::BlockSyncBarrierOacc::BlockShared()
