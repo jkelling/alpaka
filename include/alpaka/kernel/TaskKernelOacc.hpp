@@ -24,7 +24,7 @@
 
 // Implementation details.
 #include <alpaka/ctx/block/CtxBlockOacc.hpp>
-#include <alpaka/ctx/thread/CtxThreadOacc.hpp>
+#include <alpaka/acc/AccOacc.hpp>
 #include <alpaka/dev/DevOacc.hpp>
 #include <alpaka/idx/MapIdx.hpp>
 #include <alpaka/kernel/Traits.hpp>
@@ -164,7 +164,7 @@ namespace alpaka
                         #pragma acc loop worker
                         for(TIdx w = 0; w < blockThreadCount; ++w)
                         {
-                            CtxThreadOacc<TDim, TIdx> acc(
+                            AccOacc<TDim, TIdx> acc(
                                 w,
                                 blockShared);
 
