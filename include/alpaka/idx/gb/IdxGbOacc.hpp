@@ -27,21 +27,21 @@ namespace alpaka
         template<
             typename TDim,
             typename TIdx>
-        class IdxGbOaccBuiltIn
+        class IdxGbOacc
         {
         public:
             //-----------------------------------------------------------------------------
-            IdxGbOaccBuiltIn() = default;
+            IdxGbOacc() = default;
             //-----------------------------------------------------------------------------
-            IdxGbOaccBuiltIn(IdxGbOaccBuiltIn const &) = delete;
+            IdxGbOacc(IdxGbOacc const &) = delete;
             //-----------------------------------------------------------------------------
-            IdxGbOaccBuiltIn(IdxGbOaccBuiltIn &&) = delete;
+            IdxGbOacc(IdxGbOacc &&) = delete;
             //-----------------------------------------------------------------------------
-            auto operator=(IdxGbOaccBuiltIn const & ) -> IdxGbOaccBuiltIn & = delete;
+            auto operator=(IdxGbOacc const & ) -> IdxGbOacc & = delete;
             //-----------------------------------------------------------------------------
-            auto operator=(IdxGbOaccBuiltIn &&) -> IdxGbOaccBuiltIn & = delete;
+            auto operator=(IdxGbOacc &&) -> IdxGbOacc & = delete;
             //-----------------------------------------------------------------------------
-            ~IdxGbOaccBuiltIn() = default;
+            ~IdxGbOacc() = default;
 
             using BlockShared = IdxGbLinear<TDim, TIdx>;
         };
