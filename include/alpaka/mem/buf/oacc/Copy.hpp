@@ -77,7 +77,7 @@ namespace alpaka
             }
 
             //#############################################################################
-            //! The OpenAcc device memory copy task base.
+            //! The OpenACC device memory copy task base.
             //!
             template<
                 typename TDim,
@@ -169,7 +169,7 @@ namespace alpaka
             };
 
             //#############################################################################
-            //! The OpenAcc Nd device memory copy task.
+            //! The OpenACC Nd device memory copy task.
             //!
             template<
                 typename TDim,
@@ -220,7 +220,7 @@ namespace alpaka
             };
 
             //#############################################################################
-            //! The 1d Oacc memory copy task.
+            //! The 1d OpenACC memory copy task.
             template<
                 typename TViewDst,
                 typename TViewSrc,
@@ -264,7 +264,7 @@ namespace alpaka
     namespace traits
     {
         //#############################################################################
-        //! The CPU to Oacc memory copy trait specialization.
+        //! The CPU to OpenACC memory copy trait specialization.
         template<
             typename TDim>
         struct CreateTaskMemcpy<
@@ -286,12 +286,10 @@ namespace alpaka
 
                 return alpaka::oacc::detail::makeTaskCopyOacc<
                     alpaka::oacc::detail::TaskCopyOacc,
-                    // oacc::detail::TaskCopyOacc<
                         TDim,
                         TViewDst,
                         TViewSrc,
                         TExtent>(
-                    //     void(*)(void*,void*,size_t)>(
                             viewDst,
                             viewSrc,
                             extent,
@@ -302,7 +300,7 @@ namespace alpaka
         };
 
         //#############################################################################
-        //! The Oacc to CPU memory copy trait specialization.
+        //! The OpenACC to CPU memory copy trait specialization.
         template<
             typename TDim>
         struct CreateTaskMemcpy<
@@ -324,12 +322,10 @@ namespace alpaka
 
                 return alpaka::oacc::detail::makeTaskCopyOacc<
                     alpaka::oacc::detail::TaskCopyOacc,
-                    // oacc::detail::TaskCopyOacc<
                         TDim,
                         TViewDst,
                         TViewSrc,
                         TExtent>(
-                    //     void(*)(void*,void*,size_t)>(
                             viewDst,
                             viewSrc,
                             extent,
@@ -340,7 +336,7 @@ namespace alpaka
         };
 
         //#############################################################################
-        //! The Oacc to Oacc memory copy trait specialization.
+        //! The OpenACC to OpenACC memory copy trait specialization.
         template<
             typename TDim>
         struct CreateTaskMemcpy<
@@ -365,12 +361,10 @@ namespace alpaka
 
                 return alpaka::oacc::detail::makeTaskCopyOacc<
                     alpaka::oacc::detail::TaskCopyOacc,
-                    // oacc::detail::TaskCopyOacc<
                         TDim,
                         TViewDst,
                         TViewSrc,
                         TExtent>(
-                    //     void(*)(void*,void*,size_t)>(
                             viewDst,
                             viewSrc,
                             extent,

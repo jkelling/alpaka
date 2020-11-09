@@ -164,7 +164,6 @@ namespace alpaka
                         #pragma acc loop worker
                         for(TIdx w = 0; w < blockThreadCount; ++w)
                         {
-                            // blockThreadIdx[0] = w;
                             CtxThreadOacc<TDim, TIdx> acc(
                                 w,
                                 blockShared);

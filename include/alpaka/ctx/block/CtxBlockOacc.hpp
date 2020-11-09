@@ -112,7 +112,7 @@ namespace alpaka
                 int sum;
 // Workaround to use an array in an atomic capture rather than
 // using the data member m_syncCounter array directly.
-// The change is sematically equivlent.
+// The change is semantically equivalent.
 // However, this should work per the OpenACC standard, but appears to be compiler
 // issue causing a runtime error.  The error was seen the 20.7 release
 // of the NVIDIA HPC Compiler but may be corrected in future releases.
