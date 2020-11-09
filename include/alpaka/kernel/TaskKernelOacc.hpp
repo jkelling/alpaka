@@ -155,8 +155,9 @@ namespace alpaka
 
                         // Execute the threads in parallel.
 
-                        // Parallel execution of the threads in a block is required because when syncBlockThreads is called all of them have to be done with their work up to this line.
-                        // So we have to spawn one OS thread per thread in a block.
+                        // Parallel execution of the threads in a block is required because when
+                        // syncBlockThreads is called all of them have to be done with their work up
+                        // to this line.  So we have to spawn one OS thread per thread in a block.
                         //! \warning The OpenACC is technically allowed to ignore the value in the num_workers clause
                         //! and could run fewer threads. The standard provides no way to check how many worker threads are running.
                         //! If fewer threads are run, syncBlockThreads will dead-lock. It is up to the developer/user

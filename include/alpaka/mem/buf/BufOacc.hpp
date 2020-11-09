@@ -1,4 +1,4 @@
-/* Copyright 2019 Alexander Matthes, Benjamin Worpitz, Matthias Werner, René Widera
+/* Copyright 2020 Jeffrey Kelling, Alexander Matthes, Benjamin Worpitz, Matthias Werner, René Widera
  *
  * This file is part of Alpaka.
  *
@@ -145,7 +145,7 @@ namespace alpaka
         oacc::detail::BufOaccImpl<TElem, TDim, TIdx>& operator*() {return *m_spBufImpl;}
         const oacc::detail::BufOaccImpl<TElem, TDim, TIdx>& operator*() const {return *m_spBufImpl;}
 
-        inline const Vec<TDim, TIdx>& extentElements() const {return m_spBufImpl->m_extentElements;}
+        const Vec<TDim, TIdx>& extentElements() const {return m_spBufImpl->m_extentElements;}
 
     private:
         std::shared_ptr<oacc::detail::BufOaccImpl<TElem, TDim, TIdx>> m_spBufImpl;
