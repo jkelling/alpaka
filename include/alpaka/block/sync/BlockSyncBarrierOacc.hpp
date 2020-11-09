@@ -1,4 +1,4 @@
-/* Copyright 2019 Axel Huebl, Benjamin Worpitz
+/* Copyright 2020 Jeffrey Kelling
  *
  * This file is part of Alpaka.
  *
@@ -9,7 +9,11 @@
 
 #pragma once
 
-#ifdef _OPENACC
+#ifdef ALPAKA_ACC_ANY_BT_OACC_ENABLED
+
+#if _OPENACC < 201306
+    #error If ALPAKA_ACC_ANY_BT_OACC_ENABLED is set, the compiler has to support OpenACC xx or higher!
+#endif
 
 #include <alpaka/block/sync/Traits.hpp>
 
