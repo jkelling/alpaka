@@ -1,4 +1,4 @@
-/* Copyright 2019 Axel Huebl, Benjamin Worpitz, René Widera
+/* Copyright 2020 Axel Huebl, Jeffrey Kelling, Benjamin Worpitz, René Widera
  *
  * This file is part of Alpaka.
  *
@@ -30,25 +30,25 @@ namespace alpaka
     namespace bt
     {
         //#############################################################################
-        //! The CUDA accelerator ND index provider.
+        //! The OpenACC accelerator ND index provider.
         template<
             typename TDim,
             typename TIdx>
-        class IdxBtOaccBuiltIn : public concepts::Implements<ConceptIdxBt, IdxBtOaccBuiltIn<TDim, TIdx>>
+        class IdxBtOacc : public concepts::Implements<ConceptIdxBt, IdxBtOacc<TDim, TIdx>>
         {
         public:
             //-----------------------------------------------------------------------------
-            IdxBtOaccBuiltIn(TIdx blockThreadIdx) : m_blockThreadIdx(blockThreadIdx) {};
+            IdxBtOacc(TIdx blockThreadIdx) : m_blockThreadIdx(blockThreadIdx) {};
             //-----------------------------------------------------------------------------
-            IdxBtOaccBuiltIn(IdxBtOaccBuiltIn const &) = delete;
+            IdxBtOacc(IdxBtOacc const &) = delete;
             //-----------------------------------------------------------------------------
-            IdxBtOaccBuiltIn(IdxBtOaccBuiltIn &&) = delete;
+            IdxBtOacc(IdxBtOacc &&) = delete;
             //-----------------------------------------------------------------------------
-            auto operator=(IdxBtOaccBuiltIn const & ) -> IdxBtOaccBuiltIn & = delete;
+            auto operator=(IdxBtOacc const & ) -> IdxBtOacc & = delete;
             //-----------------------------------------------------------------------------
-            auto operator=(IdxBtOaccBuiltIn &&) -> IdxBtOaccBuiltIn & = delete;
+            auto operator=(IdxBtOacc &&) -> IdxBtOacc & = delete;
             //-----------------------------------------------------------------------------
-            /*virtual*/ ~IdxBtOaccBuiltIn() = default;
+            /*virtual*/ ~IdxBtOacc() = default;
 
             const TIdx m_blockThreadIdx;
         };
@@ -62,7 +62,7 @@ namespace alpaka
             typename TDim,
             typename TIdx>
         struct DimType<
-            bt::IdxBtOaccBuiltIn<TDim, TIdx>>
+            bt::IdxBtOacc<TDim, TIdx>>
         {
             using type = TDim;
         };
@@ -73,7 +73,7 @@ namespace alpaka
             typename TDim,
             typename TIdx>
         struct GetIdx<
-            bt::IdxBtOaccBuiltIn<TDim, TIdx>,
+            bt::IdxBtOacc<TDim, TIdx>,
             origin::Block,
             unit::Threads>
         {
@@ -82,7 +82,7 @@ namespace alpaka
             template<
                 typename TWorkDiv>
             static auto getIdx(
-                bt::IdxBtOaccBuiltIn<TDim, TIdx> const &idx,
+                bt::IdxBtOacc<TDim, TIdx> const &idx,
                 TWorkDiv const & workDiv)
             -> Vec<TDim, TIdx>
             {
@@ -95,7 +95,7 @@ namespace alpaka
         template<
             typename TIdx>
         struct GetIdx<
-            bt::IdxBtOaccBuiltIn<DimInt<1u>, TIdx>,
+            bt::IdxBtOacc<DimInt<1u>, TIdx>,
             origin::Block,
             unit::Threads>
         {
@@ -104,7 +104,7 @@ namespace alpaka
             template<
                 typename TWorkDiv>
             static auto getIdx(
-                bt::IdxBtOaccBuiltIn<DimInt<1u>, TIdx> const & idx,
+                bt::IdxBtOacc<DimInt<1u>, TIdx> const & idx,
                 TWorkDiv const &)
             -> Vec<DimInt<1u>, TIdx>
             {
@@ -118,7 +118,7 @@ namespace alpaka
             typename TDim,
             typename TIdx>
         struct IdxType<
-            bt::IdxBtOaccBuiltIn<TDim, TIdx>>
+            bt::IdxBtOacc<TDim, TIdx>>
         {
             using type = TIdx;
         };
