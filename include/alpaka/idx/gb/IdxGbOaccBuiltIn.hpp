@@ -41,7 +41,7 @@ namespace alpaka
             //-----------------------------------------------------------------------------
             auto operator=(IdxGbOaccBuiltIn &&) -> IdxGbOaccBuiltIn & = delete;
             //-----------------------------------------------------------------------------
-            /*virtual*/ ~IdxGbOaccBuiltIn() = default;
+            ~IdxGbOaccBuiltIn() = default;
 
             using BlockShared = IdxGbLinear<TDim, TIdx>;
         };

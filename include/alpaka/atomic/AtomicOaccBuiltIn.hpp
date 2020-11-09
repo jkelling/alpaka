@@ -39,7 +39,7 @@ namespace alpaka
         //-----------------------------------------------------------------------------
         ALPAKA_FN_HOST_ACC auto operator=(AtomicOaccBuiltIn &&) -> AtomicOaccBuiltIn & = delete;
         //-----------------------------------------------------------------------------
-        /*virtual*/ ~AtomicOaccBuiltIn() = default;
+        ~AtomicOaccBuiltIn() = default;
     };
 
     namespace traits

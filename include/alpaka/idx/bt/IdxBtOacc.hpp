@@ -48,7 +48,7 @@ namespace alpaka
             //-----------------------------------------------------------------------------
             auto operator=(IdxBtOacc &&) -> IdxBtOacc & = delete;
             //-----------------------------------------------------------------------------
-            /*virtual*/ ~IdxBtOacc() = default;
+            ~IdxBtOacc() = default;
 
             const TIdx m_blockThreadIdx;
         };

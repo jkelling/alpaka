@@ -85,7 +85,7 @@ namespace alpaka
         //-----------------------------------------------------------------------------
         auto operator=(CtxBlockOacc &&) -> CtxBlockOacc & = delete;
         //-----------------------------------------------------------------------------
-        /*virtual*/ ~CtxBlockOacc() = default;
+        ~CtxBlockOacc() = default;
     };
 
     namespace traits

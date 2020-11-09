@@ -37,7 +37,7 @@ namespace alpaka
         //-----------------------------------------------------------------------------
         ALPAKA_FN_HOST auto operator=(BlockSyncBarrierOacc &&) -> BlockSyncBarrierOacc & = delete;
         //-----------------------------------------------------------------------------
-        /*virtual*/ ~BlockSyncBarrierOacc() = default;
+        ~BlockSyncBarrierOacc() = default;
 
         class BlockShared : public concepts::Implements<ConceptBlockSync, BlockShared>
         {
@@ -54,7 +54,7 @@ namespace alpaka
                 //-----------------------------------------------------------------------------
                 ALPAKA_FN_HOST auto operator=(BlockShared &&) -> BlockShared & = delete;
                 //-----------------------------------------------------------------------------
-                /*virtual*/ ~BlockShared() = default;
+                ~BlockShared() = default;
 
                 std::uint8_t mutable m_generation = 0u;
                 // NVHPC 20.7: initializer causes warning:
