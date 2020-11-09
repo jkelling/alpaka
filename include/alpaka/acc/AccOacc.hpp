@@ -72,7 +72,7 @@ namespace alpaka
     template<
         typename TDim,
         typename TIdx>
-    class AccOacc :
+    class AccOacc final :
         public gb::IdxGbOaccBuiltIn<TDim, TIdx>, // dummy
         public bt::IdxBtOacc<TDim, TIdx>,
         public AtomicHierarchy<
@@ -128,7 +128,7 @@ namespace alpaka
         //-----------------------------------------------------------------------------
         auto operator=(AccOacc &&) -> AccOacc & = delete;
         //-----------------------------------------------------------------------------
-        /*virtual*/ ~AccOacc() = default;
+        ~AccOacc() = default;
 
         CtxBlockOacc<TDim, TIdx>& m_blockShared;
     };
