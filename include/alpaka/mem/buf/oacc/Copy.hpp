@@ -210,9 +210,9 @@ namespace alpaka
                             {
                                 this->m_copyPred(
                                     reinterpret_cast<void *>(
-                                        this->m_dstMemNative + (castVec<DstSize>(idx) * dstPitchBytesWithoutOutmost).foldrAll(std::plus<DstSize>())),
+                                        this->m_dstMemNative + (castVec<DstSize>(idx) * dstPitchBytesWithoutOutmost).sum()),
                                     const_cast<void*>(reinterpret_cast<const void *>(
-                                        this->m_srcMemNative + (castVec<SrcSize>(idx) * srcPitchBytesWithoutOutmost).foldrAll(std::plus<SrcSize>()))),
+                                        this->m_srcMemNative + (castVec<SrcSize>(idx) * srcPitchBytesWithoutOutmost).sum())),
                                     static_cast<std::size_t>(this->m_extentWidthBytes));
                             });
                     }

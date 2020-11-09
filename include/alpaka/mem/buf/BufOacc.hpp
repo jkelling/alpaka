@@ -106,11 +106,11 @@ namespace alpaka
                 Vec<TDim, TIdx> m_pitchBytes;
                 TElem* m_pMem;
 
-                    BufOaccImpl(const BufOaccImpl&) = delete;
-                    BufOaccImpl(BufOaccImpl &&) = default;
+                BufOaccImpl(const BufOaccImpl&) = delete;
+                BufOaccImpl(BufOaccImpl &&) = default;
                 BufOaccImpl& operator=(const BufOaccImpl&) = delete;
                 BufOaccImpl& operator=(BufOaccImpl&&) = default;
-                    ~BufOaccImpl()
+                ~BufOaccImpl()
                 {
                     m_dev.makeCurrent();
                     acc_free(m_pMem);
@@ -137,8 +137,8 @@ namespace alpaka
                 m_spBufImpl(std::make_shared<oacc::detail::BufOaccImpl<TElem, TDim, TIdx>>(dev, pMem, extent))
         {}
 
-            BufOacc(const BufOacc&) = default;
-            BufOacc(BufOacc &&) = default;
+        BufOacc(const BufOacc&) = default;
+        BufOacc(BufOacc &&) = default;
         BufOacc& operator=(const BufOacc&) = default;
         BufOacc& operator=(BufOacc&&) = default;
 
@@ -385,9 +385,7 @@ namespace alpaka
             {
                 ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
-                std::size_t size = static_cast<std::size_t>(extent[0]*static_cast<TIdx>(sizeof(TElem)));
-                for (unsigned int a = 1u; a < static_cast<unsigned int>(TDim::value); ++a)
-                    size *= static_cast<std::size_t>(extent[a]);
+                const std::size_t size = static_cast<std::size_t>(extent.prod()) * sizeof(TElem);
 
                 dev.makeCurrent();
                 void * memPtr = acc_malloc(size);
