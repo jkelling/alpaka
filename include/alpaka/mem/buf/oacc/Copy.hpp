@@ -246,7 +246,7 @@ namespace alpaka
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
                     this->printDebug();
 #endif
-                    if(static_cast<std::size_t>(this->m_extent.prod()) != 0u)
+                    if(this->m_extent.prod() != 0)
                     {
                         this->m_dev.makeCurrent();
                         this->m_copyPred(
