@@ -79,7 +79,9 @@ namespace alpaka
                             pitch
                         ); // NOP if size is zero
 
+#if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
                 std::cout << "Set TDim=" << TDim::value << " pitch=" << pitch << " byteExtent=" << byteExtent << std::endl;
+#endif
                 auto elementsPerThread = Vec<TDim, Idx>::all(static_cast<Idx>(1u));
                 elementsPerThread[lastDim] = 4;
                 // Let alpaka calculate good block and grid sizes given our full problem extent
