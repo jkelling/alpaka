@@ -385,14 +385,14 @@ namespace alpaka
             {
                 ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
-                const std::size_t size = static_cast<std::size_t>(extent.prod()) * sizeof(TElem);
+                const std::size_t size = static_cast<std::size_t>(extent::getExtentVec(extent).prod()) * sizeof(TElem);
 
                 dev.makeCurrent();
                 void * memPtr = acc_malloc(size);
 #if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
                 std::cout << __func__ << "alloc'd " << TDim::value
                     << "D device ptr: " << memPtr << " on device " << dev.m_spDevOaccImpl->iDevice()
-                    << " size " << size << " = " << static_cast<std::size_t>(extent::getExtentVec(extent).prod())*sizeof(TElem) << '\n';
+                    << " size: " << size << std::endl;
 #endif
                 return
                     BufOacc<TElem, TDim, TIdx>(
