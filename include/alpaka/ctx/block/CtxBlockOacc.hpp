@@ -17,7 +17,7 @@
 
 // Base classes.
 #include <alpaka/workdiv/WorkDivMembers.hpp>
-#include <alpaka/idx/gb/IdxGbOacc.hpp>
+#include <alpaka/idx/gb/IdxGbLinear.hpp>
 #include <alpaka/block/shared/dyn/BlockSharedMemDynMember.hpp>
 #include <alpaka/block/shared/st/BlockSharedMemStMember.hpp>
 #include <alpaka/block/sync/BlockSyncBarrierOacc.hpp>
@@ -44,10 +44,10 @@ namespace alpaka
         typename TIdx>
     class CtxBlockOacc final :
         public WorkDivMembers<TDim, TIdx>,
-        public gb::IdxGbOacc<TDim, TIdx>::BlockShared,
+        public gb::IdxGbLinear<TDim, TIdx>,
         public BlockSharedMemDynMember<>,
         public detail::BlockSharedMemStMemberImpl<4>,
-        public BlockSyncBarrierOacc::BlockShared,
+        public BlockSyncBarrierOacc,
         public concepts::Implements<ConceptBlockSharedSt, CtxBlockOacc<TDim, TIdx>>
     {
     public:
@@ -68,11 +68,11 @@ namespace alpaka
             TIdx const & gridBlockIdx,
             std::size_t const & blockSharedMemDynSizeBytes) :
                 WorkDivMembers<TDim, TIdx>(gridBlockExtent, blockThreadExtent, threadElemExtent),
-                gb::IdxGbOacc<TDim, TIdx>::BlockShared(gridBlockIdx),
+                gb::IdxGbLinear<TDim, TIdx>(gridBlockIdx),
                 BlockSharedMemDynMember<>(blockSharedMemDynSizeBytes),
                 //! \TODO can with some TMP determine the amount of statically alloced smem from the kernelFuncObj?
                 detail::BlockSharedMemStMemberImpl<4>(staticMemBegin(), staticMemCapacity()),
-                BlockSyncBarrierOacc::BlockShared()
+                BlockSyncBarrierOacc()
         {}
 
     public:
