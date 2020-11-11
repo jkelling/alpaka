@@ -17,7 +17,7 @@
 
 // Base classes.
 #include <alpaka/idx/gb/IdxGbOacc.hpp>
-#include <alpaka/idx/bt/IdxBtOacc.hpp>
+#include <alpaka/idx/bt/IdxBtLinear.hpp>
 #include <alpaka/atomic/AtomicOaccBuiltIn.hpp>
 #include <alpaka/atomic/AtomicHierarchy.hpp>
 #include <alpaka/intrinsic/IntrinsicFallback.hpp>
@@ -74,7 +74,7 @@ namespace alpaka
         typename TIdx>
     class AccOacc final :
         public gb::IdxGbOacc<TDim, TIdx>, // dummy
-        public bt::IdxBtOacc<TDim, TIdx>,
+        public bt::IdxBtLinear<TDim, TIdx>,
         public AtomicHierarchy<
             AtomicOaccBuiltIn,    // grid atomics
             AtomicOaccBuiltIn,    // block atomics
@@ -106,7 +106,7 @@ namespace alpaka
             TIdx const & blockThreadIdx,
             CtxBlockOacc<TDim, TIdx>& blockShared) :
                 gb::IdxGbOacc<TDim, TIdx>(),
-                bt::IdxBtOacc<TDim, TIdx>(blockThreadIdx),
+                bt::IdxBtLinear<TDim, TIdx>(blockThreadIdx),
                 AtomicHierarchy<
                     AtomicOaccBuiltIn,    // grid atomics
                     AtomicOaccBuiltIn,    // block atomics
