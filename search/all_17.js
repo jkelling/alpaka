@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['zeros',['zeros',['../classalpaka_1_1vec_1_1Vec.html#a1620ffb03e0609da491084aef9c82a50',1,'alpaka::vec::Vec']]]
+  ['xor_1789',['Xor',['../classalpaka_1_1rand_1_1generator_1_1uniform__cuda__hip_1_1Xor.html',1,'alpaka::rand::generator::uniform_cuda_hip::Xor'],['../classalpaka_1_1rand_1_1generator_1_1uniform__cuda__hip_1_1Xor.html#a0175960fa352b4addaca40526c90da02',1,'alpaka::rand::generator::uniform_cuda_hip::Xor::Xor()'],['../classalpaka_1_1rand_1_1generator_1_1uniform__cuda__hip_1_1Xor.html#a2ced799f722cfd6c0781fd06fd667245',1,'alpaka::rand::generator::uniform_cuda_hip::Xor::Xor(std::uint32_t const &amp;seed, std::uint32_t const &amp;subsequence=0, std::uint32_t const &amp;offset=0)']]]
 ];
