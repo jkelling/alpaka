@@ -122,13 +122,18 @@ namespace alpaka
             auto argsD = m_args;
             auto kernelFnObj = m_kernelFnObj;
             dev.makeCurrent();
+
+            std::uint32_t blocksLock[2] = {0u, 0u};
+            std::uint32_t* gridsLock = dev.gridsLock();
+
 #    pragma acc parallel num_workers(blockThreadCount) copyin(                                                        \
         threadElemExtent,                                                                                             \
         blockThreadExtent,                                                                                            \
         gridBlockExtent,                                                                                              \
         argsD,                                                                                                        \
         blockSharedMemDynSizeBytes,                                                                                   \
-        kernelFnObj) default(present)
+        blocksLock [0:2],                                                                                             \
+        kernelFnObj) default(present) deviceptr(gridsLock)
             {
                 {
 #    pragma acc loop gang
@@ -139,7 +144,9 @@ namespace alpaka
                             blockThreadExtent,
                             threadElemExtent,
                             b,
-                            blockSharedMemDynSizeBytes);
+                            blockSharedMemDynSizeBytes,
+                            gridsLock,
+                            blocksLock);
 
 // Execute the threads in parallel.
 
